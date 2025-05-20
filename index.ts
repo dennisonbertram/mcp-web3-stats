@@ -381,6 +381,242 @@ server.tool(
   }
 );
 
+// Tool to get EVM token holders
+server.tool(
+  "get_evm_token_holders",
+  "Discovers token distribution across ERC20 or ERC721 holders for a given token on a specific EVM chain, ranked by wallet value.",
+  {
+    chainId: z.union([z.string(), z.number()]).describe("The chain ID (e.g., 1 or '1' for Ethereum)."),
+    tokenAddress: z.string().describe("The ERC20 or ERC721 token contract address (e.g., 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)."),
+    limit: z.preprocess(
+      (val) => (typeof val === 'string' ? parseInt(val, 10) : val),
+      z.number().int().positive().optional().describe("Optional. Maximum number of token holders to return.")
+    ),
+    offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
+  },
+  async ({ chainId, tokenAddress, limit, offset }) => {
+    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
+    let url = `${duneApiBaseUrl}/evm/token-holders/${chainId}/${tokenAddress}`;
+    const queryParams = new URLSearchParams();
+
+    if (limit !== undefined) {
+      queryParams.append("limit", String(limit));
+    }
+    if (offset !== undefined) {
+      queryParams.append("offset", offset);
+    }
+
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    try {
+      console.error(`Fetching EVM token holders for ${tokenAddress} on chain ${chainId} from ${url}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          "X-Sim-Api-Key": DUNE_API_KEY!,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Error fetching token holders from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
+            },
+          ],
+        };
+      }
+
+      const data = await response.json();
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      console.error(`Error calling Dune API for get_evm_token_holders: ${error.message}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `An unexpected error occurred: ${error.message}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+// Tool to get SVM token balances
+server.tool(
+  "get_svm_balances",
+  "Fetches token balances (native, SPL, SPL-2022) for a given SVM wallet address from the Dune API.",
+  {
+    walletAddress: z.string().describe("The SVM wallet address (e.g., a Solana or Eclipse address)."),
+    chains: z.string().optional().describe("Optional. Comma-separated list of chains (e.g., 'solana,eclipse') or 'all'. Defaults to fetching for all supported SVM chains if not specified."),
+    limit: z.preprocess(
+      (val) => (typeof val === 'string' ? parseInt(val, 10) : val),
+      z.number().int().positive().optional().describe("Optional. Maximum number of balance items to return.")
+    ),
+    offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
+  },
+  async ({ walletAddress, chains, limit, offset }) => {
+    const duneApiBaseUrl = "https://api.sim.dune.com/beta"; // Note: SVM is in beta
+    let url = `${duneApiBaseUrl}/svm/balances/${walletAddress}`;
+    const queryParams = new URLSearchParams();
+
+    if (chains !== undefined) {
+      queryParams.append("chains", chains);
+    }
+    if (limit !== undefined) {
+      queryParams.append("limit", String(limit));
+    }
+    if (offset !== undefined) {
+      queryParams.append("offset", offset);
+    }
+
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    try {
+      console.error(`Fetching SVM balances for ${walletAddress} from ${url}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          "X-Sim-Api-Key": DUNE_API_KEY!,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Error fetching SVM balances from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
+            },
+          ],
+        };
+      }
+
+      const data = await response.json();
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      console.error(`Error calling Dune API for get_svm_balances: ${error.message}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `An unexpected error occurred: ${error.message}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+// Tool to get SVM transactions
+server.tool(
+  "get_svm_transactions",
+  "Fetches transactions for a given SVM wallet address (currently Solana only) from the Dune API.",
+  {
+    walletAddress: z.string().describe("The SVM wallet address (e.g., a Solana address)."),
+    limit: z.preprocess(
+      (val) => (typeof val === 'string' ? parseInt(val, 10) : val),
+      z.number().int().positive().optional().describe("Optional. Maximum number of transactions to return.")
+    ),
+    offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
+  },
+  async ({ walletAddress, limit, offset }) => {
+    const duneApiBaseUrl = "https://api.sim.dune.com/beta"; // Note: SVM is in beta
+    let url = `${duneApiBaseUrl}/svm/transactions/${walletAddress}`;
+    const queryParams = new URLSearchParams();
+
+    if (limit !== undefined) {
+      queryParams.append("limit", String(limit));
+    }
+    if (offset !== undefined) {
+      queryParams.append("offset", offset);
+    }
+
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    try {
+      console.error(`Fetching SVM transactions for ${walletAddress} from ${url}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          "X-Sim-Api-Key": DUNE_API_KEY!,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Error fetching SVM transactions from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
+            },
+          ],
+        };
+      }
+
+      const data = await response.json();
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      console.error(`Error calling Dune API for get_svm_transactions: ${error.message}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `An unexpected error occurred: ${error.message}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
