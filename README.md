@@ -106,10 +106,10 @@ This assumes you have already run `bun run build` to create the `./dist` directo
       "command": "node",
       "args": [
         "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/dist/index.js"
-      ]
-      // The DUNE_API_KEY will be loaded by the server from its .env file,
-      // so it does not need to be specified in the "env" block here if the .env
-      // file is correctly placed in your server's project root.
+      ],
+      "env": {
+        "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key
+      }
     }
   }
 }
@@ -127,8 +127,10 @@ This is convenient for development but might require specifying the full path to
       "args": [
         "run",
         "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/index.ts"
-      ]
-      // As above, DUNE_API_KEY is loaded from the server's .env file.
+      ],
+      "env": {
+        "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key
+      }
     }
   }
 }
@@ -136,7 +138,7 @@ This is convenient for development but might require specifying the full path to
 
 **Important Configuration Notes:**
 
+*   **API Key:** You **MUST** replace `"your_actual_dune_api_key_here"` in the `env` block with your actual Dune API key. While the server script includes `dotenv` to load a local `.env` file, relying on the client (like Claude Desktop) to pass the environment variable via its configuration is more reliable for servers launched by external hosts.
 *   **Absolute Paths:** You **MUST** replace `/ABSOLUTE/PATH/TO/YOUR/...` with the correct and full absolute path to the `dist/index.js` file (for Node) or `index.ts` file (for Bun direct execution) and to the Bun executable if running TypeScript directly.
-*   **`.env` File:** Ensure the `.env` file containing your `DUNE_API_KEY` is located in the root directory of your `dune-mcp-server` project. The server script uses `dotenv` to load this key when it starts.
 *   **Bun Executable Path:** If using Bun directly (Example 2), the `command` might need to be the full, absolute path to your Bun executable (e.g., `~/.bun/bin/bun` on macOS/Linux, or the equivalent path on Windows) if it's not universally in the PATH for applications like Claude Desktop.
 *   **Restart Client:** After saving changes to `claude_desktop_config.json`, you must restart Claude Desktop for the changes to take effect.
