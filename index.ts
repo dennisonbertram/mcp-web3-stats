@@ -12,6 +12,34 @@ if (!DUNE_API_KEY) {
   process.exit(1);
 }
 
+// Helper function to call Dune API
+async function callDuneApi(path: string, queryParams?: URLSearchParams) {
+  const baseUrl = path.startsWith("/beta") ? "https://api.sim.dune.com/beta" : "https://api.sim.dune.com/v1";
+  const fullPath = path.startsWith("/beta") ? path.substring("/beta".length) : path.substring("/v1".length);
+  
+  let url = `${baseUrl}${fullPath}`;
+
+  if (queryParams && queryParams.toString()) {
+    url += `?${queryParams.toString()}`;
+  }
+
+  console.error(`Calling Dune API: ${url}`); // Log the actual call
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      "X-Sim-Api-Key": DUNE_API_KEY!,
+      "Accept": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
+    throw new Error(`Dune API Error: ${response.status} ${response.statusText}. Details: ${errorBody}`);
+  }
+  return response.json();
+}
+
 const server = new McpServer({
   name: "DuneAPIAnalyzer",
   version: "0.1.0",
@@ -42,34 +70,10 @@ server.tool(
     // TODO: Add optional parameters like chainIds, excludeSpamTokens, metadata, limit, offset in the future
   },
   async ({ walletAddress }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    const url = `${duneApiBaseUrl}/evm/balances/${walletAddress}`;
-
+    const path = `/v1/evm/balances/${walletAddress}`;
+    // const queryParams = new URLSearchParams(); // No specific query params for base balances yet
     try {
-      console.error(`Fetching EVM balances for ${walletAddress} from ${url}`); // Log to stderr
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching balances from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path /*, queryParams */);
       return {
         content: [
           {
@@ -79,13 +83,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_balances: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -103,38 +106,14 @@ server.tool(
     // TODO: Add optional parameter like offset and exclude_spam_tokens in the future
   },
   async ({ walletAddress, limit }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    let url = `${duneApiBaseUrl}/evm/activity/${walletAddress}`;
-
+    const path = `/v1/evm/activity/${walletAddress}`;
+    const queryParams = new URLSearchParams();
     if (limit !== undefined) {
-      url += `?limit=${limit}`;
+      queryParams.append("limit", String(limit));
     }
 
     try {
-      console.error(`Fetching EVM activity for ${walletAddress} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching activity from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -144,13 +123,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_activity: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -168,38 +146,14 @@ server.tool(
     // TODO: Add optional parameter like offset in the future
   },
   async ({ walletAddress, limit }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    let url = `${duneApiBaseUrl}/evm/collectibles/${walletAddress}`;
-
+    const path = `/v1/evm/collectibles/${walletAddress}`;
+    const queryParams = new URLSearchParams();
     if (limit !== undefined) {
-      url += `?limit=${limit}`;
+      queryParams.append("limit", String(limit));
     }
 
     try {
-      console.error(`Fetching EVM collectibles for ${walletAddress} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching collectibles from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -209,13 +163,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_collectibles: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -237,8 +190,7 @@ server.tool(
     // TODO: Add other potential filter parameters like start_block_time, end_block_time if supported by API and useful
   },
   async ({ walletAddress, limit, offset }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    let url = `${duneApiBaseUrl}/evm/transactions/${walletAddress}`;
+    const path = `/v1/evm/transactions/${walletAddress}`;
     const queryParams = new URLSearchParams();
 
     if (limit !== undefined) {
@@ -248,36 +200,8 @@ server.tool(
       queryParams.append("offset", offset);
     }
 
-    const queryString = queryParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-
     try {
-      console.error(`Fetching EVM transactions for ${walletAddress} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching transactions from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -287,13 +211,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_transactions: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -315,8 +238,7 @@ server.tool(
     offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
   },
   async ({ chainAndTokenUri, chainIds, limit, offset }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    let url = `${duneApiBaseUrl}/evm/token-info/${chainAndTokenUri}`;
+    const path = `/v1/evm/token-info/${chainAndTokenUri}`;
     const queryParams = new URLSearchParams();
 
     queryParams.append("chain_ids", chainIds); // Mandatory parameter
@@ -328,36 +250,8 @@ server.tool(
       queryParams.append("offset", offset);
     }
 
-    const queryString = queryParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-
     try {
-      console.error(`Fetching EVM token info for ${chainAndTokenUri} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching token info from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -367,13 +261,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_token_info: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -395,8 +288,7 @@ server.tool(
     offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
   },
   async ({ chainId, tokenAddress, limit, offset }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/v1";
-    let url = `${duneApiBaseUrl}/evm/token-holders/${chainId}/${tokenAddress}`;
+    const path = `/v1/evm/token-holders/${chainId}/${tokenAddress}`;
     const queryParams = new URLSearchParams();
 
     if (limit !== undefined) {
@@ -406,36 +298,8 @@ server.tool(
       queryParams.append("offset", offset);
     }
 
-    const queryString = queryParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-
     try {
-      console.error(`Fetching EVM token holders for ${tokenAddress} on chain ${chainId} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching token holders from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -445,13 +309,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_evm_token_holders: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -473,8 +336,7 @@ server.tool(
     offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
   },
   async ({ walletAddress, chains, limit, offset }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/beta"; // Note: SVM is in beta
-    let url = `${duneApiBaseUrl}/svm/balances/${walletAddress}`;
+    const path = `/beta/svm/balances/${walletAddress}`;
     const queryParams = new URLSearchParams();
 
     if (chains !== undefined) {
@@ -487,36 +349,8 @@ server.tool(
       queryParams.append("offset", offset);
     }
 
-    const queryString = queryParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-
     try {
-      console.error(`Fetching SVM balances for ${walletAddress} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching SVM balances from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -526,13 +360,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_svm_balances: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -553,8 +386,7 @@ server.tool(
     offset: z.string().optional().describe("Optional. The offset (cursor) for pagination."),
   },
   async ({ walletAddress, limit, offset }) => {
-    const duneApiBaseUrl = "https://api.sim.dune.com/beta"; // Note: SVM is in beta
-    let url = `${duneApiBaseUrl}/svm/transactions/${walletAddress}`;
+    const path = `/beta/svm/transactions/${walletAddress}`;
     const queryParams = new URLSearchParams();
 
     if (limit !== undefined) {
@@ -564,36 +396,8 @@ server.tool(
       queryParams.append("offset", offset);
     }
 
-    const queryString = queryParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-
     try {
-      console.error(`Fetching SVM transactions for ${walletAddress} from ${url}`);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request failed with status ${response.status}: ${errorBody}`);
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Error fetching SVM transactions from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path, queryParams);
       return {
         content: [
           {
@@ -603,13 +407,12 @@ server.tool(
         ],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for get_svm_transactions: ${error.message}`);
       return {
         isError: true,
         content: [
           {
             type: "text",
-            text: `An unexpected error occurred: ${error.message}`,
+            text: error.message,
           },
         ],
       };
@@ -627,31 +430,9 @@ server.resource(
     mimeType: "application/json"
   },
   async (uri) => { // Handler function
-    const duneApiUrl = "https://api.sim.dune.com/v1/evm/supported-chains";
-
+    const path = "/v1/evm/supported-chains";
     try {
-      console.error(`Fetching supported EVM chains from ${duneApiUrl}`);
-      const response = await fetch(duneApiUrl, {
-        method: 'GET',
-        headers: {
-          "X-Sim-Api-Key": DUNE_API_KEY!,
-          "Accept": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`Dune API request for supported chains failed with status ${response.status}: ${errorBody}`);
-        return {
-          contents: [{
-            uri: uri.href, // Echo back the requested URI
-            mimeType: "text/plain",
-            text: `Error fetching supported chains from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
-          }],
-        };
-      }
-
-      const data = await response.json();
+      const data = await callDuneApi(path);
       return {
         contents: [{
           uri: uri.href,
@@ -660,15 +441,79 @@ server.resource(
         }],
       };
     } catch (error: any) {
-      console.error(`Error calling Dune API for supported chains: ${error.message}`);
       return {
         contents: [{
           uri: uri.href,
           mimeType: "text/plain",
-          text: `An unexpected error occurred while fetching supported chains: ${error.message}`,
+          text: error.message, // Error message from callDuneApi is already detailed
         }],
       };
     }
+  }
+);
+
+// Compound Tool: EVM Wallet Snapshot
+server.tool(
+  "get_evm_wallet_snapshot",
+  "Provides a comprehensive snapshot of an EVM wallet, including token balances, recent activity, and NFT collectibles.",
+  {
+    walletAddress: z.string().describe("The EVM wallet address."),
+    activityLimit: z.preprocess(
+      (val) => (typeof val === 'string' ? parseInt(val, 10) : (typeof val === 'number' ? val : 10)),
+      z.number().int().positive().optional().default(10).describe("Number of recent activity items to fetch. Default: 10.")
+    ),
+    collectiblesLimit: z.preprocess(
+      (val) => (typeof val === 'string' ? parseInt(val, 10) : (typeof val === 'number' ? val : 10)),
+      z.number().int().positive().optional().default(10).describe("Number of NFT collectibles to fetch. Default: 10.")
+    ),
+  },
+  async ({ walletAddress, activityLimit, collectiblesLimit }) => {
+    const results = {
+      balances: null as any,
+      activity: null as any,
+      collectibles: null as any,
+    };
+
+    const balancesPath = `/v1/evm/balances/${walletAddress}`;
+    const activityPath = `/v1/evm/activity/${walletAddress}`;
+    const collectiblesPath = `/v1/evm/collectibles/${walletAddress}`;
+
+    const activityParams = new URLSearchParams({ limit: String(activityLimit) });
+    const collectiblesParams = new URLSearchParams({ limit: String(collectiblesLimit) });
+
+    const promises = [
+      callDuneApi(balancesPath).then(data => ({ name: 'balances', data })).catch(error => ({ name: 'balances', error: error.message })),
+      callDuneApi(activityPath, activityParams).then(data => ({ name: 'activity', data })).catch(error => ({ name: 'activity', error: error.message })),
+      callDuneApi(collectiblesPath, collectiblesParams).then(data => ({ name: 'collectibles', data })).catch(error => ({ name: 'collectibles', error: error.message })),
+    ];
+
+    const settledResults = await Promise.allSettled(promises);
+
+    settledResults.forEach(result => {
+      if (result.status === 'fulfilled') {
+        const value = result.value;
+        if ('error' in value) { // Check if it's an error result
+          results[value.name as keyof typeof results] = { error: value.error };
+        } else if ('data' in value) { // Check if it's a data result
+          results[value.name as keyof typeof results] = value.data;
+        }
+      } else {
+        // Should not happen with the .catch in each promise, but as a fallback:
+        console.error(`Promise rejected unexpectedly: ${result.reason}`);
+        // For a production server, you might want to identify which promise failed
+        // and add a specific error to the 'results' object for that part.
+        // For now, this will leave that part of the results as null.
+      }
+    });
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(results, null, 2),
+        },
+      ],
+    };
   }
 );
 
