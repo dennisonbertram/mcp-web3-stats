@@ -56,25 +56,34 @@ The server provides the following MCP tools and resources based on the Dune API:
     The server will start and listen for MCP messages via stdio.
 
 *   **To build the server to JavaScript (for environments that require JS):**
+    Use the configured build script which utilizes the TypeScript compiler (`tsc`):
     ```bash
     bun run build
     ```
-    This will compile the TypeScript to JavaScript in the `./dist` directory. You can then run it with Node.js or Bun:
+    This command executes `bunx tsc` as defined in `package.json`. `tsc` uses the `tsconfig.json` file to determine entry points (like `index.ts`) and compilation options, outputting the JavaScript files to the `./dist` directory.
+
+    You can then run the built server with Node.js or Bun:
     ```bash
     node dist/index.js 
     # or
     bun dist/index.js
     ```
 
+    *Alternatively, if you wish to use Bun's built-in bundler directly (which may have different behavior or configuration needs than `tsc`), you would typically specify the entry point explicitly:* 
+    *`bun build ./index.ts --outdir ./dist`* 
+    *However, this project is set up to use `tsc` for builds via the `bun run build` script.*
+
 ## Testing with MCP Inspector
 
 Once the server is running (e.g., via `bun start` in one terminal), you can connect to it using the MCP Inspector in another terminal:
 
 ```bash
+# If running the TypeScript source directly
 npx @modelcontextprotocol/inspector bun run index.ts
 ```
-Or, if you have built the server:
+Or, if you have built the server and are running the JavaScript version:
 ```bash
+# If running the built JavaScript version from ./dist
 npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
@@ -82,46 +91,52 @@ This will launch the Inspector UI, allowing you to discover and test the tools, 
 
 ## Integrating with MCP Clients (e.g., Claude Desktop)
 
-To use this server with an MCP client like Claude Desktop, you'll need to configure the client to launch this server. For Claude Desktop, you would modify its `claude_desktop_config.json` file.
+To use this server with an MCP client like Claude Desktop, you'll need to configure the client to launch this server. For Claude Desktop, you would modify its `claude_desktop_config.json` file (typically found at `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows).
 
-Example configuration for `claude_desktop_config.json` (macOS/Linux, adjust paths as necessary):
+Below are example configurations. You can choose a server name (e.g., `dune_api_server` or `web3_stats_server`) that makes sense to you.
 
-**If running directly with Bun:**
+**Example 1: Running the built JavaScript version with Node.js (Recommended for stability)**
+
+This assumes you have already run `bun run build` to create the `./dist` directory.
+
 ```json
 {
   "mcpServers": {
-    "dune_analyzer": {
-      "command": "/full/path/to/bun", // e.g., /Users/username/.bun/bin/bun
-      "args": [
-        "run",
-        "/full/path/to/your/dune-mcp-server/index.ts"
-      ],
-      "env": {
-        // DUNE_API_KEY should be picked up from the .env file in the server's directory
-      }
-    }
-  }
-}
-```
-
-**If running the built JavaScript version with Node:**
-```json
-{
-  "mcpServers": {
-    "dune_analyzer": {
+    "dune_api_server": { // You can name this server entry whatever you like
       "command": "node",
       "args": [
-        "/full/path/to/your/dune-mcp-server/dist/index.js"
-      ],
-      "env": {
-        // DUNE_API_KEY should be picked up from the .env file in the server's directory
-      }
+        "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/dist/index.js"
+      ]
+      // The DUNE_API_KEY will be loaded by the server from its .env file,
+      // so it does not need to be specified in the "env" block here if the .env
+      // file is correctly placed in your server's project root.
     }
   }
 }
 ```
 
-**Important:** 
-* Replace `/full/path/to/...` with the actual absolute paths on your system.
-* Ensure the `.env` file with `DUNE_API_KEY` is in the same directory as `index.ts` (or `dist/index.js`) so `dotenv` can load it when the server starts.
-* The `command` for Bun might need to be the full path to the Bun executable if it's not in the default PATH for the client application.
+**Example 2: Running the TypeScript source directly with Bun**
+
+This is convenient for development but might require specifying the full path to your Bun executable.
+
+```json
+{
+  "mcpServers": {
+    "dune_api_server_dev": { // You can name this server entry whatever you like
+      "command": "/full/path/to/your/bun/executable", // e.g., /Users/username/.bun/bin/bun or C:\Users\username\.bun\bin\bun.exe
+      "args": [
+        "run",
+        "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/index.ts"
+      ]
+      // As above, DUNE_API_KEY is loaded from the server's .env file.
+    }
+  }
+}
+```
+
+**Important Configuration Notes:**
+
+*   **Absolute Paths:** You **MUST** replace `/ABSOLUTE/PATH/TO/YOUR/...` with the correct and full absolute path to the `dist/index.js` file (for Node) or `index.ts` file (for Bun direct execution) and to the Bun executable if running TypeScript directly.
+*   **`.env` File:** Ensure the `.env` file containing your `DUNE_API_KEY` is located in the root directory of your `dune-mcp-server` project. The server script uses `dotenv` to load this key when it starts.
+*   **Bun Executable Path:** If using Bun directly (Example 2), the `command` might need to be the full, absolute path to your Bun executable (e.g., `~/.bun/bin/bun` on macOS/Linux, or the equivalent path on Windows) if it's not universally in the PATH for applications like Claude Desktop.
+*   **Restart Client:** After saving changes to `claude_desktop_config.json`, you must restart Claude Desktop for the changes to take effect.

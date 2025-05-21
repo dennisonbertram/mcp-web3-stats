@@ -1,5 +1,7 @@
 {
   "name": "dune-mcp-server",
+  "description": "MCP Server for Dune API, built by Dennison Bertram with Google Gemini.",
+  "author": "Dennison Bertram <dennison@dennisonbertram.com>",
   "module": "index.ts",
   "type": "module",
   "scripts": {
