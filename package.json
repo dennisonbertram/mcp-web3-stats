@@ -1,5 +1,5 @@
 {
-  "name": "@modelcontextprotocol/web3-stats-server",
+  "name": "mcp-web3-stats",
   "version": "1.0.0",
   "description": "MCP Server for Dune API to analyze blockchain data and wallet information",
   "author": "Dennison Bertram <dennison@dennisonbertram.com>",
@@ -26,7 +26,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "web3-stats-server": "./dist/index.js"
+    "mcp-web3-stats": "./dist/index.js"
   },
   "files": [
     "dist",

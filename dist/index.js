@@ -35,7 +35,7 @@ async function callDuneApi(path, queryParams) {
     return response.json();
 }
 const server = new McpServer({
-    name: "Web3StatsServer",
+    name: "MCPWeb3Stats",
     version: VERSION,
     capabilities: {
         tools: {},
@@ -472,15 +472,15 @@ async function main() {
     // Check for CLI arguments
     const args = process.argv.slice(2);
     if (args.includes('--version') || args.includes('-v')) {
-        console.log(`Web3 Stats Server v${VERSION}`);
+        console.log(`MCP Web3 Stats v${VERSION}`);
         process.exit(0);
     }
     if (args.includes('--help') || args.includes('-h')) {
         console.log(`
-Web3 Stats Server - MCP Server for Dune API to analyze blockchain data
+MCP Web3 Stats - MCP Server for Dune API to analyze blockchain data
 
 USAGE:
-  web3-stats-server [OPTIONS]
+  mcp-web3-stats [OPTIONS]
 
 OPTIONS:
   -h, --help     Show this help message
@@ -497,7 +497,7 @@ DESCRIPTION:
     }
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error(`Web3 Stats Server v${VERSION} started and listening on stdio.`);
+    console.error(`MCP Web3 Stats v${VERSION} started and listening on stdio.`);
 }
 // Handle graceful shutdown
 process.on('SIGINT', () => {
@@ -509,6 +509,6 @@ process.on('SIGTERM', () => {
     process.exit(0);
 });
 main().catch((error) => {
-    console.error("Failed to start Web3 Stats Server:", error);
+    console.error("Failed to start MCP Web3 Stats Server:", error);
     process.exit(1);
 });

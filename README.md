@@ -52,16 +52,16 @@ You can install the Web3 Stats Server globally via npm:
 
 ```bash
 # Install globally
-npm install -g @modelcontextprotocol/web3-stats-server
+npm install -g mcp-web3-stats
 
 # Set your Dune API key as an environment variable
 export DUNE_API_KEY=your_actual_dune_api_key_here
 
 # Run the server
-web3-stats-server
+mcp-web3-stats
 
 # In a separate terminal, test with the MCP Inspector
-npx @modelcontextprotocol/inspector web3-stats-server
+npx @modelcontextprotocol/inspector mcp-web3-stats
 ```
 
 Alternatively, you can run it directly with npx:
@@ -71,10 +71,10 @@ Alternatively, you can run it directly with npx:
 export DUNE_API_KEY=your_actual_dune_api_key_here
 
 # Run the server with npx
-npx @modelcontextprotocol/web3-stats-server
+npx mcp-web3-stats
 
 # In a separate terminal, test with the MCP Inspector
-npx @modelcontextprotocol/inspector npx @modelcontextprotocol/web3-stats-server
+npx @modelcontextprotocol/inspector npx mcp-web3-stats
 ```
 
 ## What You Can Do With This
