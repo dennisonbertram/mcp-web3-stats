@@ -5,8 +5,8 @@
     "target": "ESNext",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "./dist",
     "composite": true,
     "strict": true,
     "downlevelIteration": true,
@@ -17,6 +17,8 @@
     "allowJs": true,
     "types": [
       "bun-types"
-    ]
-  }
+    ],
+    "esModuleInterop": true
+  },
+  "include": ["index.ts", "src/**/*.ts"]
 }
