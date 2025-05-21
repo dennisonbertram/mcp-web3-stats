@@ -1,6 +1,6 @@
 {
   "name": "mcp-web3-stats",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP Server for Dune API to analyze blockchain data and wallet information",
   "author": "Dennison Bertram <dennison@dennisonbertram.com>",
   "license": "MIT",
