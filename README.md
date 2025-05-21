@@ -30,8 +30,8 @@ The server provides the following MCP tools and resources based on the Dune API:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/web3-stats-server.git
-cd web3-stats-server
+git clone https://github.com/crazyrabbitLTC/mcp-web3-stats.git
+cd mcp-web3-stats
 
 # Install dependencies
 bun install
@@ -229,7 +229,7 @@ This assumes you have already run `bun run build` to create the `./dist` directo
     "dune_api_server": { // You can name this server entry whatever you like
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/dist/index.js"
+        "/ABSOLUTE/PATH/TO/YOUR/mcp-web3-stats/dist/index.js"
       ],
       "env": {
         "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key
@@ -250,7 +250,7 @@ This is convenient for development but might require specifying the full path to
       "command": "/full/path/to/your/bun/executable", // e.g., /Users/username/.bun/bin/bun or C:\Users\username\.bun\bin\bun.exe
       "args": [
         "run",
-        "/ABSOLUTE/PATH/TO/YOUR/dune-mcp-server/index.ts"
+        "/ABSOLUTE/PATH/TO/YOUR/mcp-web3-stats/index.ts"
       ],
       "env": {
         "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key

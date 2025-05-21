@@ -16,12 +16,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ModelContextProtocol/web3-stats-server"
+    "url": "https://github.com/crazyrabbitLTC/mcp-web3-stats"
   },
   "bugs": {
-    "url": "https://github.com/ModelContextProtocol/web3-stats-server/issues"
+    "url": "https://github.com/crazyrabbitLTC/mcp-web3-stats/issues"
   },
-  "homepage": "https://github.com/ModelContextProtocol/web3-stats-server#readme",
+  "homepage": "https://github.com/crazyrabbitLTC/mcp-web3-stats#readme",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
