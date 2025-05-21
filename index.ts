@@ -6,7 +6,7 @@ import { z } from "zod";
 import dotenv from "dotenv";
 
 // Version from package.json
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 dotenv.config(); // Load environment variables
 
