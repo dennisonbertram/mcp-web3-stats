@@ -491,6 +491,93 @@ server.resource(
   }
 );
 
+// MCP Prompts
+server.prompt(
+  "evm_wallet_overview",
+  {
+    walletAddress: z.string().describe("The EVM wallet address to get an overview for.")
+  },
+  ({ walletAddress }) => { // Callback receives validated arguments
+    return {
+      // Optional: A description of what this prompt invocation will do, can be shown to user.
+      // description: `Generating an overview for EVM wallet ${walletAddress}...`,
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please provide an overview for EVM wallet ${walletAddress}. I'm interested in its current token balances and a summary of its 5 most recent activities. Present the balances first, then the activity summary.`
+          }
+        },
+        {
+          role: "assistant", // This pre-fills the assistant's first response, guiding it.
+          content: {
+            type: "text",
+            text: `Okay, I will use the 'get_evm_balances' tool to fetch token balances and the 'get_evm_activity' tool (with a limit of 5) to get recent activity for ${walletAddress}. Then I will summarize the findings.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+server.prompt(
+  "analyze_erc20_token",
+  "Analyze a specific ERC20 token, showing its information and top 10 holders.", // Description string
+  {
+    chainId: z.string().describe("The chain ID where the token resides (e.g., '1' for Ethereum). Input as a string."),
+    tokenAddress: z.string().describe("The ERC20 token contract address.")
+  },
+  ({ chainId, tokenAddress }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `I need a detailed analysis of the ERC20 token ${tokenAddress} on chain ${chainId}. Please fetch its token information and list its top 10 holders.`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `Understood. I will use 'get_evm_token_info' for chain ${chainId} and token ${tokenAddress} (using chainId ${chainId} for the chain_ids parameter), and then 'get_evm_token_holders' for the same chain and token with a limit of 10. I will then present this information.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+server.prompt(
+  "svm_address_check",
+  "Check basic information for an SVM address, including balances and its 3 most recent transactions.",
+  {
+    walletAddress: z.string().describe("The SVM wallet address to check.")
+  },
+  ({ walletAddress }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please provide a quick check for the SVM address ${walletAddress}. Show me its token balances (for Solana by default) and its 3 most recent transactions.`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `Okay, I will use 'get_svm_balances' (defaulting to Solana chain) and 'get_svm_transactions' (with a limit of 3) for the address ${walletAddress} and summarize the results.`
+          }
+        }
+      ]
+    };
+  }
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
