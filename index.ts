@@ -617,6 +617,61 @@ server.tool(
   }
 );
 
+// Resource for EVM Supported Chains
+server.resource(
+  "dune_evm_supported_chains", // Internal registration name
+  "dune://evm/supported-chains", // The URI clients will use to request this resource
+  { // ResourceDefinition for discovery (metadata)
+    name: "Dune EVM Supported Chains",
+    description: "Provides a list of EVM chains supported by the Dune API and their capabilities per endpoint.",
+    mimeType: "application/json"
+  },
+  async (uri) => { // Handler function
+    const duneApiUrl = "https://api.sim.dune.com/v1/evm/supported-chains";
+
+    try {
+      console.error(`Fetching supported EVM chains from ${duneApiUrl}`);
+      const response = await fetch(duneApiUrl, {
+        method: 'GET',
+        headers: {
+          "X-Sim-Api-Key": DUNE_API_KEY!,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Dune API request for supported chains failed with status ${response.status}: ${errorBody}`);
+        return {
+          contents: [{
+            uri: uri.href, // Echo back the requested URI
+            mimeType: "text/plain",
+            text: `Error fetching supported chains from Dune API: ${response.status} ${response.statusText}. Details: ${errorBody}`,
+          }],
+        };
+      }
+
+      const data = await response.json();
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: "application/json",
+          text: JSON.stringify(data, null, 2),
+        }],
+      };
+    } catch (error: any) {
+      console.error(`Error calling Dune API for supported chains: ${error.message}`);
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: "text/plain",
+          text: `An unexpected error occurred while fetching supported chains: ${error.message}`,
+        }],
+      };
+    }
+  }
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
