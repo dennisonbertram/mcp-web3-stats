@@ -1,17 +1,49 @@
 {
-  "name": "dune-mcp-server",
-  "description": "MCP Server for Dune API, built by Dennison Bertram with Google Gemini.",
+  "name": "@modelcontextprotocol/web3-stats-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Dune API to analyze blockchain data and wallet information",
   "author": "Dennison Bertram <dennison@dennisonbertram.com>",
-  "module": "index.ts",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "blockchain",
+    "web3",
+    "dune",
+    "crypto",
+    "ethereum",
+    "solana"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ModelContextProtocol/web3-stats-server"
+  },
+  "bugs": {
+    "url": "https://github.com/ModelContextProtocol/web3-stats-server/issues"
+  },
+  "homepage": "https://github.com/ModelContextProtocol/web3-stats-server#readme",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "web3-stats-server": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "start": "bun run index.ts",
-    "build": "bunx tsc"
+    "build": "bunx tsc",
+    "prepublishOnly": "bun run build",
+    "lint": "bunx tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
+    "@types/bun": "latest",
     "typescript": "^5.0.0"
   },
   "dependencies": {

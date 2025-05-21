@@ -1,7 +1,12 @@
+#!/usr/bin/env node
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import dotenv from "dotenv";
+
+// Version from package.json
+const VERSION = "1.0.0";
 
 dotenv.config(); // Load environment variables
 
@@ -41,8 +46,8 @@ async function callDuneApi(path: string, queryParams?: URLSearchParams) {
 }
 
 const server = new McpServer({
-  name: "DuneAPIAnalyzer",
-  version: "0.1.0",
+  name: "Web3StatsServer",
+  version: VERSION,
   capabilities: {
     tools: {},
     resources: {},
@@ -579,12 +584,52 @@ server.prompt(
 );
 
 async function main() {
+  // Check for CLI arguments
+  const args = process.argv.slice(2);
+  
+  if (args.includes('--version') || args.includes('-v')) {
+    console.log(`Web3 Stats Server v${VERSION}`);
+    process.exit(0);
+  }
+  
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(`
+Web3 Stats Server - MCP Server for Dune API to analyze blockchain data
+
+USAGE:
+  web3-stats-server [OPTIONS]
+
+OPTIONS:
+  -h, --help     Show this help message
+  -v, --version  Show version information
+
+ENVIRONMENT:
+  DUNE_API_KEY   Required API key for the Dune API (https://docs.sim.dune.com/)
+
+DESCRIPTION:
+  This MCP server exposes functionality from the Dune API, allowing LLM agents
+  and other MCP clients to analyze blockchain information.
+    `);
+    process.exit(0);
+  }
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Dune API MCP Server (Stdio) started and listening."); // Log to stderr for stdio transport
+  console.error(`Web3 Stats Server v${VERSION} started and listening on stdio.`);
 }
 
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+  console.error('Shutting down server...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.error('Shutting down server...');
+  process.exit(0);
+});
+
 main().catch((error) => {
-  console.error("Failed to start Dune API MCP Server:", error);
+  console.error("Failed to start Web3 Stats Server:", error);
   process.exit(1);
 });

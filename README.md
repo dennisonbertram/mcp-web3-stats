@@ -26,6 +26,130 @@ The server provides the following MCP tools and resources based on the Dune API:
 *   `/analyze_erc20_token {chainId} {tokenAddress}`: Analyze a specific ERC20 token.
 *   `/svm_address_check {walletAddress}`: Check basic information for an SVM address.
 
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/web3-stats-server.git
+cd web3-stats-server
+
+# Install dependencies
+bun install
+
+# Create .env file with your Dune API key
+echo "DUNE_API_KEY=your_actual_dune_api_key_here" > .env
+
+# Start the server
+bun start
+
+# In a separate terminal, run the MCP Inspector to test the tools
+npx @modelcontextprotocol/inspector bun run index.ts
+```
+
+## Installation from npm
+
+You can install the Web3 Stats Server globally via npm:
+
+```bash
+# Install globally
+npm install -g @modelcontextprotocol/web3-stats-server
+
+# Set your Dune API key as an environment variable
+export DUNE_API_KEY=your_actual_dune_api_key_here
+
+# Run the server
+web3-stats-server
+
+# In a separate terminal, test with the MCP Inspector
+npx @modelcontextprotocol/inspector web3-stats-server
+```
+
+Alternatively, you can run it directly with npx:
+
+```bash
+# Set your Dune API key as an environment variable
+export DUNE_API_KEY=your_actual_dune_api_key_here
+
+# Run the server with npx
+npx @modelcontextprotocol/web3-stats-server
+
+# In a separate terminal, test with the MCP Inspector
+npx @modelcontextprotocol/inspector npx @modelcontextprotocol/web3-stats-server
+```
+
+## What You Can Do With This
+
+This MCP server allows you and your AI assistant to analyze blockchain data and wallet information directly. Here are some example use cases:
+
+### 1. Check Wallet Balances
+
+You can quickly view all tokens (including ERC20s and NFTs) held by any wallet address:
+
+```
+Assistant: Let me check the balances in this wallet for you.
+
+[Uses get_evm_balances with walletAddress=0xYourWalletAddress]
+
+This wallet contains:
+- 1.25 ETH (~$3,800)
+- 500 USDC ($500)
+- Several NFTs including a CryptoPunk and two Bored Apes
+```
+
+### 2. Analyze Token Information and Holders
+
+You can research specific tokens and their distribution:
+
+```
+Assistant: Let me analyze this token for you.
+
+[Uses get_evm_token_info with chainId=1 and tokenAddress=0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984]
+
+UNI Token Information:
+- Current price: $5.32
+- Market cap: $2.7B 
+- 24h trading volume: $89M
+
+[Uses get_evm_token_holders with chainId=1 and tokenAddress=0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984]
+
+Top UNI Token Holders:
+1. 0x47173B170C64d16393a52e6C480b3Ad8c302ba1e: 5.2% of supply
+2. 0x1a9C8182C09F50C8318d769245beA52c32BE35BC: 3.8% of supply
+...
+```
+
+### 3. Review Recent Transactions
+
+You can analyze transaction history for any address:
+
+```
+Assistant: Here's a summary of recent transactions.
+
+[Uses get_evm_transactions with walletAddress=0xYourWalletAddress]
+
+Recent activity:
+- Yesterday: Swapped 2 ETH for 3,500 UNI on Uniswap
+- 3 days ago: Withdrew 5 ETH from Binance
+- Last week: Minted an NFT for 0.08 ETH
+```
+
+### 4. Check Solana Balances
+
+You can also analyze Solana wallets:
+
+```
+Assistant: Let me check your Solana wallet balances.
+
+[Uses get_svm_balances with walletAddress=YourSolanaAddress]
+
+This wallet contains:
+- 12.5 SOL (~$875)
+- 2,500 USDC ($2,500)
+- Several SPL tokens including 150 BONK
+```
+
+Configure this server with Claude Desktop or other MCP clients to enable your AI assistant to retrieve and analyze on-chain data in real time.
+
 ## Prerequisites
 
 *   [Bun](https://bun.sh/) (latest version recommended)
