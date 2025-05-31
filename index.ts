@@ -1905,6 +1905,522 @@ server.resource(
 );
 
 // ============================================
+// BLOCKCHAIN REFERENCE RESOURCES
+// ============================================
+
+// Resource: Major DEX Router Contracts
+server.resource(
+  "dex_router_contracts",
+  "web3-stats://contracts/dex-routers",
+  {
+    name: "DEX Router Contracts",
+    description: "Major decentralized exchange router contracts across different chains",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    const dexRouters = {
+      "1": { // Ethereum
+        "uniswap_v2": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+        "uniswap_v3": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        "uniswap_universal": "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
+        "sushiswap": "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582",
+        "0x_exchange_proxy": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
+        "curve_router": "0x99a58482BD75cbab83b27EC03CA68fF489b5788f",
+        "balancer_v2": "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
+      },
+      "10": { // Optimism
+        "uniswap_v3": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        "velodrome": "0x9c12939390052919aF3155f41Bf4160Fd3666A6f",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582",
+        "0x_exchange_proxy": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF"
+      },
+      "56": { // BSC
+        "pancakeswap_v2": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+        "pancakeswap_v3": "0x1b81D678ffb9C0263b24A97847620C99d213eB14",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582",
+        "apeswap": "0xcF0feBd3f17CEf5b47b0cD257aCf6025c5BFf3b7"
+      },
+      "137": { // Polygon
+        "quickswap": "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
+        "uniswap_v3": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        "sushiswap": "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582",
+        "0x_exchange_proxy": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF"
+      },
+      "42161": { // Arbitrum
+        "uniswap_v3": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+        "sushiswap": "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
+        "camelot": "0xc873fEcbd354f5A56E00E710B90EF4201db2448d",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582",
+        "gmx": "0xaBBc5F99639c9B6bCb58544ddf04EFA6802F4064"
+      },
+      "8453": { // Base
+        "uniswap_v3": "0x2626664c2603336E57B271c5C0b26F421741e481",
+        "aerodrome": "0x6CB442acF35158D5eDa88fe602221b67B400Be3E",
+        "baseswap": "0x327Df1E6de05895d2ab08513aaDD9313Fe505d86",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582"
+      },
+      "43114": { // Avalanche
+        "traderjoe_v2": "0x60aE616a2155Ee3d9A68541Ba4544862310933d4",
+        "pangolin": "0xE54Ca86531e17Ef3616d22Ca28b0D458b6C89106",
+        "1inch_v5": "0x1111111254EEB25477B68fb85Ed929f73A960582"
+      }
+    };
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify({
+          description: "Major DEX router contracts by chain",
+          lastUpdated: "2024-01-31",
+          routers: dexRouters,
+          usage: "Use these addresses to identify DEX interactions and routing patterns"
+        }, null, 2)
+      }]
+    };
+  }
+);
+
+// Resource: Stablecoin Addresses
+server.resource(
+  "stablecoin_addresses",
+  "web3-stats://tokens/stablecoins",
+  {
+    name: "Stablecoin Addresses",
+    description: "Known stablecoin contract addresses across different chains",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    const stablecoins = {
+      "1": { // Ethereum
+        "USDT": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        "BUSD": "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+        "TUSD": "0x0000000000085d4780B73119b644AE5ecd22b376",
+        "FRAX": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+        "LUSD": "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+        "GUSD": "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
+        "PAX": "0x8E870D67F660D95d5be530380D0eC0bd388289E1",
+        "sUSD": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51",
+        "USDD": "0x0C10bF8FcB7Bf5412187A595ab97a3609160b5c6",
+        "MIM": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3"
+      },
+      "10": { // Optimism
+        "USDC": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+        "USDC.e": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+        "USDT": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+        "DAI": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
+        "sUSD": "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9",
+        "LUSD": "0xc40F949F8a4e094D1b49a23ea9241D289B7b2819",
+        "FRAX": "0x2E3D870790dC77A83DD1d18184Acc7439A53f475"
+      },
+      "56": { // BSC
+        "BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+        "USDT": "0x55d398326f99059fF775485246999027B3197955",
+        "USDC": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        "DAI": "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3",
+        "TUSD": "0x14016E85a25aeb13065688cAFB43044C2ef86784",
+        "UST": "0x23396cF899Ca06c4472205fC903bDB4de249D6fC"
+      },
+      "137": { // Polygon
+        "USDC": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "USDT": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        "DAI": "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+        "BUSD": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+        "TUSD": "0x2e1AD108ff1D8C782fcBbB89AAd783aC49586756",
+        "FRAX": "0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89",
+        "GUSD": "0xC8A94a3d3D2dabC3C1CaffFFDcA6A7543c3e3e65"
+      },
+      "42161": { // Arbitrum
+        "USDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+        "USDC.e": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+        "USDT": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+        "DAI": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
+        "FRAX": "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
+        "MIM": "0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A",
+        "LUSD": "0x93b346b6BC2548dA6A1E7d98E9a421B42541425b"
+      },
+      "8453": { // Base
+        "USDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+        "USDbC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+        "DAI": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb"
+      },
+      "43114": { // Avalanche
+        "USDC": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+        "USDC.e": "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664",
+        "USDT": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+        "USDT.e": "0xc7198437980c041c805A1EDcbA50c1Ce5db95118",
+        "DAI.e": "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70",
+        "BUSD": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+        "FRAX": "0xD24C2Ad096400B6FBcd2ad8B24E7acBc21A1da64"
+      }
+    };
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify({
+          description: "Stablecoin contract addresses by chain",
+          lastUpdated: "2024-01-31",
+          stablecoins: stablecoins,
+          notes: {
+            ".e": "Bridged version (usually from Ethereum)",
+            "native": "Native/canonical version on that chain"
+          }
+        }, null, 2)
+      }]
+    };
+  }
+);
+
+// Resource: Bridge Contracts
+server.resource(
+  "bridge_contracts",
+  "web3-stats://contracts/bridges",
+  {
+    name: "Bridge Contracts",
+    description: "Known bridge contracts for cross-chain transfers",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    const bridges = {
+      "cross_chain_bridges": {
+        "wormhole": {
+          "1": "0x3ee18B2214AFF97000D974cf647E7C347E8fa585", // Ethereum
+          "10": "0x1D1499e622D69689cdf9004d05Ec547d650Ff211", // Optimism
+          "56": "0xB6F6D86a8f9879A9c87f643768d9efc38c1Da6E7", // BSC
+          "137": "0x5a58505a96D1dbf8dF91cB21B54419FC36e93fdE", // Polygon
+          "42161": "0x0b2402144Bb366A632D14B83F244D2e0e21bD39c", // Arbitrum
+          "43114": "0x0e082F06FF657D94310cB8cE8B0D9a04541d8052" // Avalanche
+        },
+        "layerzero": {
+          "endpoint_v1": {
+            "1": "0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675",
+            "10": "0x3c2269811836af69497E5F486A85D7316753cf62",
+            "56": "0x3c2269811836af69497E5F486A85D7316753cf62",
+            "137": "0x3c2269811836af69497E5F486A85D7316753cf62",
+            "42161": "0x3c2269811836af69497E5F486A85D7316753cf62",
+            "43114": "0x3c2269811836af69497E5F486A85D7316753cf62"
+          }
+        },
+        "across": {
+          "1": "0x4D9079Bb4165aeb4084c526a32695dCfd2F77381", // Ethereum
+          "10": "0xa420b2d1c0841415A695b81E5B867BCD07Dff8C9", // Optimism
+          "137": "0x69B5c72837769eF1e7C164Abc6515DcFf217F920", // Polygon
+          "42161": "0xB88690461dDbaB6f04Dfad7df66B7725942FEb9C" // Arbitrum
+        },
+        "stargate": {
+          "router": {
+            "1": "0x8731d54E9D02c286767d56ac03e8037C07e01e98",
+            "10": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",
+            "56": "0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8",
+            "137": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
+            "42161": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
+            "43114": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd"
+          }
+        },
+        "synapse": {
+          "1": "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+          "10": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b",
+          "56": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+          "137": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+          "42161": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+          "43114": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE"
+        },
+        "hop": {
+          "1": "0x3666f603Cc164936C1b87e207F36BEBa4AC5f18a",
+          "10": "0x83f6244Bd87662118d96D9a6D44f09dffF14b30E",
+          "137": "0x553bC791D746767166fA3888432038193cEED5E2",
+          "42161": "0x72209Fe68386b37A40d6bCA04f78356fd342491f"
+        },
+        "celer_cbridge": {
+          "1": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
+          "10": "0x9D39Fc627A6d9d9F8C831c16995b209548cc3401",
+          "56": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
+          "137": "0x88DCDC47D2f83a99CF0000FDF667A468bB958a78",
+          "42161": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
+          "43114": "0xef3c714c9425a8F3697A9C969Dc1af30ba82e5d4"
+        },
+        "multichain": {
+          "1": "0x6b7a87899490EcE95443e979cA9485CBE7E71522",
+          "56": "0xf391e8a92e7E5f7b86016b46202Dd160c0598b79",
+          "137": "0x4f3Aff3A747fCADe12598081e80c6605A8be192F",
+          "43114": "0xC1aAE9d18bBe386B102435a8632C8063d31e747C"
+        }
+      },
+      "native_l2_bridges": {
+        "optimism": {
+          "l1_standard_bridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1",
+          "l2_standard_bridge": "0x4200000000000000000000000000000000000010"
+        },
+        "base": {
+          "l1_standard_bridge": "0x3154Cf16ccdb4C6d922629664174b904d80F2C35",
+          "l2_standard_bridge": "0x4200000000000000000000000000000000000010"
+        },
+        "arbitrum": {
+          "l1_gateway_router": "0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef",
+          "l1_erc20_gateway": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC",
+          "l2_gateway_router": "0x5288c571Fd7aD117beA99bF60FE0846C4E84F933",
+          "l2_erc20_gateway": "0x09e9222E96E7B4AE2a407B98d48e330053351EEe"
+        },
+        "polygon": {
+          "root_chain_manager": "0xA0c68C638235ee32657e8f720a23ceC1bFc77C77",
+          "erc20_predicate": "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf"
+        },
+        "zksync": {
+          "l1_bridge": "0x57891966931Eb4Bb6FB81430E6cE0A03AAbDe063",
+          "l2_bridge": "0x11f943b2c77b743AB90f4A0Ae7d5A4e7FCA3E102"
+        }
+      }
+    };
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify({
+          description: "Bridge contracts for cross-chain transfers",
+          lastUpdated: "2024-01-31",
+          bridges: bridges,
+          notes: {
+            "cross_chain_bridges": "Third-party bridges that support multiple chains",
+            "native_l2_bridges": "Official bridges for L2 networks"
+          }
+        }, null, 2)
+      }]
+    };
+  }
+);
+
+// Resource: Security Patterns and Known Issues
+server.resource(
+  "security_patterns",
+  "web3-stats://security/patterns",
+  {
+    name: "Security Patterns",
+    description: "Known spam addresses, vulnerability patterns, and suspicious behaviors",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    const securityData = {
+      "known_spam_tokens": {
+        "patterns": [
+          "Visit.*to claim",
+          "Reward.*Token",
+          "Airdrop.*claim",
+          "\\$.*USD.*Voucher",
+          "zepe\\.io",
+          "blur\\.io.*ETH"
+        ],
+        "addresses": {
+          "1": [
+            "0x0000000000000000000000000000000000000000", // Null address spam
+            "0xdead000000000000000042069420694206942069", // Dead address variants
+          ]
+        }
+      },
+      "honeypot_indicators": {
+        "contract_patterns": [
+          "Can modify fees to 100%",
+          "Hidden mint function",
+          "Pausable transfers without timelock",
+          "Blacklist function without governance",
+          "Transfer restrictions based on holder status",
+          "Hidden owner privileges in transfer logic",
+          "Max transaction amount can be set to 0"
+        ],
+        "behavioral_patterns": [
+          "100% of liquidity in single pool",
+          "Liquidity added and locked for <30 days",
+          "Single large holder (>50%) that's not a contract",
+          "Many failed transactions from unique addresses",
+          "Buy transactions succeed, sells fail"
+        ]
+      },
+      "rugpull_patterns": {
+        "pre_launch": [
+          "Anonymous team with no doxxing",
+          "Cloned contract with minor modifications",
+          "Aggressive marketing with unrealistic promises",
+          "Presale with no vesting schedule",
+          "Team tokens unlocked at launch"
+        ],
+        "post_launch": [
+          "Liquidity removal within 48 hours",
+          "Team wallets dumping tokens",
+          "Social media accounts deleted",
+          "Website goes offline",
+          "Contract modifications after launch"
+        ]
+      },
+      "suspicious_deployer_patterns": {
+        "behaviors": [
+          "Multiple similar contracts deployed",
+          "Contracts abandoned after liquidity removal",
+          "Pattern of tokens with <1 week lifespan",
+          "Funded through mixing services",
+          "No historical legitimate projects"
+        ],
+        "known_addresses": {
+          "description": "Addresses with history of scams/rugpulls",
+          "list": [
+            // This would be populated with actual addresses
+          ]
+        }
+      },
+      "common_vulnerabilities": {
+        "reentrancy": {
+          "pattern": "External calls before state updates",
+          "example": "transfer() called before balance update"
+        },
+        "integer_overflow": {
+          "pattern": "Arithmetic without SafeMath (pre-0.8.0)",
+          "example": "balances[to] += amount without checks"
+        },
+        "access_control": {
+          "pattern": "Missing modifier checks on critical functions",
+          "example": "mint() without onlyOwner"
+        },
+        "front_running": {
+          "pattern": "Predictable transactions with value",
+          "example": "DEX trades without slippage protection"
+        }
+      },
+      "mev_patterns": {
+        "sandwich_attack": {
+          "detection": "Buy transaction immediately before and sell after target tx",
+          "characteristics": [
+            "Same buyer/seller address",
+            "Transactions in same block",
+            "Target transaction has high slippage"
+          ]
+        },
+        "arbitrage": {
+          "detection": "Profitable trades across DEXes in same block",
+          "characteristics": [
+            "Multiple DEX interactions",
+            "Zero net token change",
+            "Profit in ETH/stables"
+          ]
+        }
+      }
+    };
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify({
+          description: "Security patterns for blockchain analysis",
+          lastUpdated: "2024-01-31",
+          patterns: securityData,
+          usage: "Reference these patterns when analyzing contracts and transactions for security risks"
+        }, null, 2)
+      }]
+    };
+  }
+);
+
+// Resource: Token Lists and Categories
+server.resource(
+  "token_categories",
+  "web3-stats://tokens/categories",
+  {
+    name: "Token Categories",
+    description: "Categorized lists of tokens for analysis",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    const tokenCategories = {
+      "governance_tokens": {
+        "1": {
+          "UNI": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+          "AAVE": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+          "COMP": "0xc00e94Cb662C3520282E6f5717214004A7f26888",
+          "MKR": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
+          "CRV": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "BAL": "0xba100000625a3754423978a60c9317c58a424e3D",
+          "YFI": "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+          "SUSHI": "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2",
+          "SNX": "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
+          "1INCH": "0x111111111117dC0aa78b770fA6A738034120C302"
+        }
+      },
+      "wrapped_tokens": {
+        "1": {
+          "WETH": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "WBTC": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+          "renBTC": "0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D",
+          "WBNB": "0x418D75f65a02b3D53B2418FB8E1fe493759c7605"
+        },
+        "10": {
+          "WETH": "0x4200000000000000000000000000000000000006"
+        },
+        "56": {
+          "WBNB": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "WETH": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
+        },
+        "137": {
+          "WMATIC": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+          "WETH": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
+        },
+        "42161": {
+          "WETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+        },
+        "43114": {
+          "WAVAX": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
+        }
+      },
+      "liquid_staking": {
+        "1": {
+          "stETH": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+          "rETH": "0xae78736Cd615f374D3085123A210448E74Fc6393",
+          "cbETH": "0xBe9895146f7AF43049ca1c1AE358B0541Ea49704",
+          "sfrxETH": "0xac3E018457B222d93114458476f3E3416Abbe38F",
+          "ankrETH": "0xE95A203B1a91a908F9B9CE46459d101078c2c3cb"
+        }
+      },
+      "algorithmic_stables": {
+        "historical": {
+          "UST": "Terra USD (collapsed)",
+          "TITAN": "Iron Finance (collapsed)",
+          "FEI": "Fei Protocol (wound down)"
+        }
+      },
+      "rebase_tokens": {
+        "1": {
+          "AMPL": "0xD46bA6D942050d489DBd938a2C909A5d5039A161",
+          "OHM": "0x64aa3364F17a4D01c6f1751Fd97C2BD3D7e7f1D5"
+        }
+      }
+    };
+
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify({
+          description: "Categorized token lists for analysis",
+          lastUpdated: "2024-01-31",
+          categories: tokenCategories,
+          notes: {
+            "governance": "Tokens used for protocol governance",
+            "wrapped": "Wrapped versions of native assets",
+            "liquid_staking": "Liquid staking derivatives",
+            "algorithmic_stables": "Algorithmic stablecoins (many failed)",
+            "rebase": "Tokens with elastic supply"
+          }
+        }, null, 2)
+      }]
+    };
+  }
+);
+
+// ============================================
 // MCP PROMPTS
 // ============================================
 
@@ -2064,6 +2580,378 @@ server.prompt(
           content: {
             type: "text",
             text: `I'll fetch the unified network support information that shows all supported chains and their API availability across both Dune and Blockscout.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// ============================================
+// ADVANCED ANALYSIS PROMPTS
+// ============================================
+
+// DeFi Protocol Investigation
+server.prompt(
+  "defi_protocol_investigation",
+  "Investigate a DeFi protocol by analyzing its core contracts, TVL, and user activity patterns.",
+  {
+    protocolName: z.string().describe("The name of the DeFi protocol (e.g., 'Uniswap', 'Aave')"),
+    mainContract: z.string().describe("The main protocol contract address"),
+    chainId: z.string().describe("The chain ID where the protocol operates")
+  },
+  ({ protocolName, mainContract, chainId }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Investigate the ${protocolName} DeFi protocol on chain ${chainId}. Main contract: ${mainContract}. I need:
+1. Contract verification and security analysis
+2. Top users and their activity patterns
+3. Token flows and liquidity analysis
+4. Recent significant transactions
+5. Risk assessment and red flags`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll conduct a comprehensive investigation of ${protocolName} using multiple analysis tools to examine the contract, user patterns, and transaction flows.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Token Launch Forensics
+server.prompt(
+  "token_launch_investigation",
+  "Perform forensic analysis on a newly launched token to identify potential risks or scams.",
+  {
+    tokenAddress: z.string().describe("The token contract address"),
+    chainId: z.string().describe("The chain ID"),
+    launchDate: z.string().optional().describe("Optional: The token launch date (YYYY-MM-DD)")
+  },
+  ({ tokenAddress, chainId, launchDate }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Perform a forensic investigation of token ${tokenAddress} on chain ${chainId}${launchDate ? ` launched on ${launchDate}` : ''}. Check for:
+1. Contract code red flags (minting, pause, blacklist functions)
+2. Initial distribution and holder concentration
+3. Liquidity pool analysis and locks
+4. Developer wallet activity
+5. Similar contract deployments by same deployer
+6. Social engineering indicators`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll perform a comprehensive forensic analysis to identify any potential risks or scam indicators for this token launch.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Whale Activity Tracker
+server.prompt(
+  "whale_movement_analysis",
+  "Track and analyze large holder (whale) movements for a specific token or protocol.",
+  {
+    tokenAddress: z.string().describe("The token contract address to monitor"),
+    chainId: z.string().describe("The chain ID"),
+    threshold: z.string().optional().describe("Optional: Minimum USD value to consider as whale activity (default: $100,000)")
+  },
+  ({ tokenAddress, chainId, threshold }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Track whale movements for token ${tokenAddress} on chain ${chainId}${threshold ? ` with threshold ${threshold}` : ''}. Analyze:
+1. Large holder list and concentration changes
+2. Recent significant transfers (in/out)
+3. Accumulation or distribution patterns
+4. Correlation with price movements
+5. Cross-protocol activity by whales`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll analyze whale activity and large holder movements to identify accumulation/distribution patterns and their market impact.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// NFT Collection Deep Analysis
+server.prompt(
+  "nft_collection_forensics",
+  "Comprehensive analysis of an NFT collection including rarity, trading patterns, and holder behavior.",
+  {
+    collectionAddress: z.string().describe("The NFT collection contract address"),
+    chainId: z.string().describe("The chain ID"),
+    includeRarity: z.string().optional().describe("Optional: Include rarity analysis - 'true' or 'false' (default: true)")
+  },
+  ({ collectionAddress, chainId, includeRarity }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Analyze NFT collection ${collectionAddress} on chain ${chainId}. Include:
+1. Collection metadata and verified status
+2. Holder distribution and concentration
+3. Trading volume and floor price trends
+4. Wash trading detection
+5. Blue chip holder overlap
+${includeRarity !== 'false' ? '6. Rarity distribution analysis' : ''}`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll perform a comprehensive NFT collection analysis including holder patterns, trading activity, and market dynamics.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Cross-Chain Bridge Analysis
+server.prompt(
+  "bridge_transaction_verification",
+  "Verify and analyze cross-chain bridge transactions for security and completion status.",
+  {
+    bridgeContract: z.string().describe("The bridge contract address"),
+    txHash: z.string().optional().describe("Optional: Specific transaction to verify"),
+    sourceChain: z.string().describe("Source chain ID"),
+    targetChain: z.string().optional().describe("Optional: Target chain ID")
+  },
+  ({ bridgeContract, txHash, sourceChain, targetChain }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Analyze bridge ${bridgeContract} on chain ${sourceChain}${targetChain ? ` bridging to chain ${targetChain}` : ''}${txHash ? ` for transaction ${txHash}` : ''}. Check:
+1. Bridge contract verification and security
+2. Recent bridge transactions and success rate
+3. Liquidity on both sides
+4. Fee structure analysis
+5. Known security incidents
+${txHash ? '6. Specific transaction status and verification' : '6. Pending/stuck transactions'}`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll analyze the bridge contract and transactions to verify security and operational status.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// MEV Transaction Detection
+server.prompt(
+  "mev_activity_detection",
+  "Detect and analyze MEV (Maximum Extractable Value) activity including sandwich attacks and arbitrage.",
+  {
+    targetAddress: z.string().optional().describe("Optional: Specific address or contract to monitor"),
+    chainId: z.string().describe("The chain ID"),
+    blockRange: z.string().optional().describe("Optional: Block range to analyze (e.g., 'latest-100')")
+  },
+  ({ targetAddress, chainId, blockRange }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Detect MEV activity on chain ${chainId}${targetAddress ? ` involving ${targetAddress}` : ''}${blockRange ? ` in blocks ${blockRange}` : ' in recent blocks'}. Identify:
+1. Sandwich attacks (front-run + back-run patterns)
+2. Arbitrage transactions across DEXes
+3. Liquidation races
+4. NFT MEV (trait sniping, floor sweeping)
+5. MEV bot identification and profit analysis`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll scan for MEV patterns including sandwich attacks, arbitrage, and other extractable value activities.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Gas Optimization Analysis
+server.prompt(
+  "gas_optimization_audit",
+  "Analyze gas usage patterns and identify optimization opportunities for contracts or users.",
+  {
+    address: z.string().describe("Contract or wallet address to analyze"),
+    chainId: z.string().describe("The chain ID"),
+    timeframe: z.string().optional().describe("Optional: Analysis timeframe (e.g., '7d', '30d')")
+  },
+  ({ address, chainId, timeframe }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Perform gas optimization analysis for ${address} on chain ${chainId}${timeframe ? ` over ${timeframe}` : ''}. Analyze:
+1. Gas consumption by function/transaction type
+2. Comparison with similar contracts/users
+3. Peak vs off-peak usage patterns
+4. Failed transaction gas waste
+5. Specific optimization recommendations
+6. Estimated savings potential`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll analyze gas usage patterns and identify specific optimization opportunities to reduce transaction costs.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// DAO Treasury Analysis
+server.prompt(
+  "dao_treasury_audit",
+  "Comprehensive audit of a DAO treasury including assets, spending, and governance.",
+  {
+    treasuryAddress: z.string().describe("The DAO treasury address"),
+    chainId: z.string().describe("The chain ID"),
+    governanceContract: z.string().optional().describe("Optional: Governance contract address")
+  },
+  ({ treasuryAddress, chainId, governanceContract }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Audit DAO treasury ${treasuryAddress} on chain ${chainId}${governanceContract ? ` with governance ${governanceContract}` : ''}. Analyze:
+1. Current asset composition and diversification
+2. Inflow/outflow patterns and burn rate
+3. Large transactions and approval process
+4. Yield generation strategies
+5. Risk assessment (concentration, liquidity)
+6. Governance participation and proposal history`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll conduct a comprehensive treasury audit analyzing assets, spending patterns, and governance effectiveness.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Smart Contract Security Scanner
+server.prompt(
+  "security_vulnerability_scan",
+  "Scan smart contracts for common vulnerabilities and security best practices.",
+  {
+    contractAddress: z.string().describe("The contract address to scan"),
+    chainId: z.string().describe("The chain ID"),
+    checkUpgradeable: z.string().optional().describe("Optional: Check for upgradeable proxy patterns - 'true' or 'false'")
+  },
+  ({ contractAddress, chainId, checkUpgradeable }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Perform security scan on contract ${contractAddress} on chain ${chainId}. Check for:
+1. Contract verification status and source code
+2. Common vulnerabilities (reentrancy, overflow, access control)
+3. Centralization risks (owner privileges, pause functions)
+4. External dependencies and composability risks
+${checkUpgradeable === 'true' ? '5. Upgradeable proxy implementation security' : '5. Immutability verification'}
+6. Historical security incidents`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll scan the contract for security vulnerabilities and analyze potential risks in the implementation.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// DeFi Yield Strategy Analysis
+server.prompt(
+  "yield_strategy_comparison",
+  "Compare and analyze DeFi yield strategies across protocols.",
+  {
+    asset: z.string().describe("The asset to analyze (e.g., 'USDC', 'ETH')"),
+    chainId: z.string().describe("The chain ID"),
+    minTvl: z.string().optional().describe("Optional: Minimum TVL for protocols to consider")
+  },
+  ({ asset, chainId, minTvl }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Compare yield strategies for ${asset} on chain ${chainId}${minTvl ? ` with minimum TVL ${minTvl}` : ''}. Analyze:
+1. Current yield rates across protocols
+2. Risk assessment (smart contract, liquidity, impermanent loss)
+3. Gas costs and minimum viable amounts
+4. Historical yield stability
+5. Composability opportunities
+6. Optimal strategy recommendations`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll analyze and compare yield opportunities across DeFi protocols to identify optimal strategies for ${asset}.`
           }
         }
       ]
