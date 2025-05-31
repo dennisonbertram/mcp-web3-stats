@@ -1,4 +1,4 @@
-import { BLOCKSCOUT_NETWORKS } from './constants';
+import { BLOCKSCOUT_NETWORKS } from './constants.js';
 
 // Helper function to call Dune API
 export async function callDuneApi(path: string, queryParams?: URLSearchParams) {
