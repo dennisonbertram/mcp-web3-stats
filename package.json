@@ -23,17 +23,17 @@
   },
   "homepage": "https://github.com/crazyrabbitLTC/mcp-web3-stats#readme",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "bin": {
-    "mcp-web3-stats": "./dist/index.js"
+    "mcp-web3-stats": "./dist/src/index.js"
   },
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "start": "bun run index.ts",
+    "start": "bun run src/index.ts",
     "build": "bunx tsc",
     "prepublishOnly": "bun run build",
     "lint": "bunx tsc --noEmit",
