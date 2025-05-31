@@ -1378,7 +1378,7 @@ server.tool(
         // Get token analytics from Dune if available
         callDuneApi(`/v1/evm/token-info/${chainId}/${contractAddress}`, new URLSearchParams({ chain_ids: chainId }))
           .catch(err => ({ error: err.message }))
-      ]);
+      ]) as [any, any, any];
 
       // Combine the results
       const analysis = {
@@ -1430,7 +1430,7 @@ server.tool(
   async ({ txHash, chainId }) => {
     try {
       // First get transaction details from Blockscout
-      const txDetails = await callBlockscoutApi(chainId, `/transactions/${txHash}`);
+      const txDetails: any = await callBlockscoutApi(chainId, `/transactions/${txHash}`);
       
       // Fetch additional transaction data in parallel
       const [txLogs, txInternalTxs, txStateChanges, senderActivity, receiverActivity] = await Promise.all([
@@ -1485,10 +1485,10 @@ server.tool(
           tokenTransfers: txDetails.token_transfers,
         },
         analysis: {
-          complexity: txInternalTxs?.items?.length > 0 ? "complex" : "simple",
+          complexity: (txInternalTxs as any)?.items?.length > 0 ? "complex" : "simple",
           hasTokenTransfers: txDetails.token_transfers?.length > 0,
-          hasStateChanges: txStateChanges?.items?.length > 0,
-          eventCount: txLogs?.items?.length || 0,
+          hasStateChanges: (txStateChanges as any)?.items?.length > 0,
+          eventCount: (txLogs as any)?.items?.length || 0,
         }
       };
 
@@ -1538,7 +1538,7 @@ server.tool(
           .catch(err => ({ error: err.message })),
         callDuneApi(`/v1/evm/token-holders/${chainId}/${tokenAddress}`, new URLSearchParams({ limit: "10" }))
           .catch(err => ({ error: err.message }))
-      ]);
+      ]) as [any, any, any, any, any];
 
       // Analyze holder concentration
       const holderAnalysis = {
@@ -1586,7 +1586,7 @@ server.tool(
           isVerified: !blockscoutTokenInfo?.error && blockscoutTokenInfo?.address !== undefined,
           hasLiquidity: duneTokenInfo?.volume_24h > 0,
           holderConcentration: holderAnalysis.concentration,
-          warnings: []
+          warnings: [] as string[]
         }
       };
 
@@ -1649,7 +1649,7 @@ server.tool(
           .catch(err => ({ error: err.message })),
         callDuneApi(`/v1/evm/activity/${walletAddress}`, new URLSearchParams({ limit: "20" }))
           .catch(err => ({ error: err.message }))
-      ]);
+      ]) as [any, any, any, any, any, any];
 
       // Analyze transaction patterns
       const txPatterns = {
@@ -1809,8 +1809,8 @@ server.resource(
       });
       
       // Merge Dune capabilities
-      if (duneChains?.chains) {
-        duneChains.chains.forEach((chain: any) => {
+      if ((duneChains as any)?.chains) {
+        (duneChains as any).chains.forEach((chain: any) => {
           const chainId = String(chain.chain_id);
           if (!networks[chainId]) {
             networks[chainId] = {
