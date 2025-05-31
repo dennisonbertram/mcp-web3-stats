@@ -1,30 +1,88 @@
-# Dune API MCP Server
+# Web3 Stats Enhanced - Dune + Blockscout MCP Server
 
-This project implements a Model Context Protocol (MCP) server that exposes functionality from the Dune API, allowing LLM agents and other MCP clients to analyze blockchain information.
+This project implements a Model Context Protocol (MCP) server that combines the power of Dune Analytics and Blockscout APIs, providing comprehensive blockchain data analysis capabilities for LLM agents and MCP clients.
+
+## 🚀 What's New in Version 2.0
+
+This enhanced version adds **Blockscout integration** alongside the existing Dune API, enabling:
+- **Real-time blockchain data** from Blockscout (transactions, contracts, logs)
+- **Aggregated analytics** from Dune (holder distributions, price trends)
+- **Compound tools** that intelligently combine both data sources
+- **Support for 9+ blockchain networks** with more coming
 
 ## Features
 
-The server provides the following MCP tools and resources based on the Dune API:
-
+### 🔷 Dune API Tools (Aggregated Analytics)
 **EVM Tools:**
-*   `get_evm_balances`: Fetches EVM token balances for a wallet.
-*   `get_evm_activity`: Fetches EVM account activity.
-*   `get_evm_collectibles`: Fetches EVM NFT collectibles.
-*   `get_evm_transactions`: Retrieves granular EVM transaction details.
-*   `get_evm_token_info`: Fetches metadata and price for EVM tokens.
-*   `get_evm_token_holders`: Discovers EVM token holder distributions.
+- `get_evm_balances`: Fetches EVM token balances for a wallet
+- `get_evm_activity`: Fetches EVM account activity
+- `get_evm_collectibles`: Fetches EVM NFT collectibles
+- `get_evm_transactions`: Retrieves granular EVM transaction details
+- `get_evm_token_info`: Fetches metadata and price for EVM tokens
+- `get_evm_token_holders`: Discovers EVM token holder distributions
 
 **SVM Tools:**
-*   `get_svm_balances`: Fetches SVM token balances.
-*   `get_svm_transactions`: Fetches SVM transactions (Solana only).
+- `get_svm_balances`: Fetches SVM token balances
+- `get_svm_transactions`: Fetches SVM transactions (Solana only)
 
-**Resources:**
-*   `dune://evm/supported-chains`: Provides a list of EVM chains supported by the Dune API.
+### 🔶 Blockscout API Tools (Real-time Data)
+**Search & Discovery:**
+- `blockscout_search`: Universal search across addresses, tokens, blocks, transactions
+- `ping_blockscout`: Test connectivity to Blockscout instances
 
-**Prompts:**
-*   `/evm_wallet_overview {walletAddress}`: Get a quick overview of an EVM wallet.
-*   `/analyze_erc20_token {chainId} {tokenAddress}`: Analyze a specific ERC20 token.
-*   `/svm_address_check {walletAddress}`: Check basic information for an SVM address.
+**Address Analysis:**
+- `blockscout_address_info`: Get address details, balance, type (EOA/contract)
+- `blockscout_address_transactions`: Get all transactions for an address
+- `blockscout_address_internal_txs`: Get internal transactions
+- `blockscout_address_logs`: Get event logs
+- `blockscout_address_token_balances`: Get all token balances
+
+**Transaction Analysis:**
+- `blockscout_transaction_details`: Get full transaction details
+- `blockscout_transaction_logs`: Get event logs from a transaction
+- `blockscout_transaction_internal_txs`: Get internal transactions
+- `blockscout_transaction_raw_trace`: Get raw execution trace
+- `blockscout_transaction_state_changes`: Get state changes
+
+**Block Explorer:**
+- `blockscout_block_details`: Get block information
+- `blockscout_block_transactions`: Get all transactions in a block
+- `blockscout_latest_blocks`: Get recent blocks
+
+**Smart Contracts:**
+- `blockscout_contract_info`: Get verified contract details, ABI, source
+- `blockscout_contract_methods`: Get readable/writable methods
+- `blockscout_read_contract`: Call contract read methods
+- `blockscout_verified_contracts`: List recently verified contracts
+
+**Token & NFT Tools:**
+- `blockscout_token_info`: Get token details, supply, decimals
+- `blockscout_token_transfers`: Get token transfer history
+- `blockscout_token_holders`: Get token holder list
+- `blockscout_nft_instances`: Get NFT instances for a collection
+- `blockscout_nft_metadata`: Get specific NFT metadata
+
+### 🔥 Compound Tools (Best of Both APIs)
+- `investigate_smart_contract`: Deep contract analysis with source code and analytics
+- `analyze_transaction_impact`: Full transaction forensics with traces and context
+- `token_deep_analysis`: Comprehensive token risk assessment
+- `profile_wallet_behavior`: Behavioral profiling with historical patterns
+
+### 📊 Resources
+- `dune://evm/supported-chains`: Dune supported chains
+- `web3-stats://supported-networks`: Unified network support across both APIs
+
+### 💬 Enhanced Prompts
+- `/comprehensive_wallet_analysis`: Deep wallet investigation
+- `/smart_contract_deep_dive`: Thorough contract investigation
+- `/token_risk_assessment`: Multi-source token risk analysis
+- `/transaction_post_mortem`: Transaction impact analysis
+- `/compare_networks`: Network capability comparison
+
+**Legacy prompts still supported:**
+- `/evm_wallet_overview`: Basic wallet overview
+- `/analyze_erc20_token`: Basic token analysis
+- `/svm_address_check`: Solana address check
 
 ## Quick Start
 
@@ -48,11 +106,9 @@ npx @modelcontextprotocol/inspector bun run index.ts
 
 ## Installation from npm
 
-You can install the Web3 Stats Server globally via npm:
-
 ```bash
 # Install globally
-npm install -g mcp-web3-stats
+npm install -g mcp-web3-stats-enhanced
 
 # Set your Dune API key as an environment variable
 export DUNE_API_KEY=your_actual_dune_api_key_here
@@ -64,205 +120,143 @@ mcp-web3-stats
 npx @modelcontextprotocol/inspector mcp-web3-stats
 ```
 
-Alternatively, you can run it directly with npx:
+## Supported Networks
 
-```bash
-# Set your Dune API key as an environment variable
-export DUNE_API_KEY=your_actual_dune_api_key_here
+The server supports multiple blockchain networks through Blockscout instances:
+- Ethereum (Chain ID: 1)
+- Optimism (Chain ID: 10)
+- BNB Smart Chain (Chain ID: 56)
+- Gnosis (Chain ID: 100)
+- Polygon (Chain ID: 137)
+- Fantom (Chain ID: 250)
+- Base (Chain ID: 8453)
+- Arbitrum (Chain ID: 42161)
+- Avalanche (Chain ID: 43114)
 
-# Run the server with npx
-npx mcp-web3-stats
+More networks can be added by updating the `BLOCKSCOUT_NETWORKS` configuration.
 
-# In a separate terminal, test with the MCP Inspector
-npx @modelcontextprotocol/inspector npx mcp-web3-stats
+## Advanced Use Cases
+
+### 1. Smart Contract Investigation
+Combine source code verification with usage analytics:
+```
+Assistant: I'll investigate this smart contract using both Blockscout and Dune data.
+
+[Uses investigate_smart_contract]
+
+This contract is:
+- Verified on Blockscout with Solidity 0.8.19
+- Has 45 read methods and 12 write methods
+- Processes $2.5M daily volume (from Dune)
+- Top 10 holders control 65% of supply
 ```
 
-## What You Can Do With This
-
-This MCP server allows you and your AI assistant to analyze blockchain data and wallet information directly. Here are some example use cases:
-
-### 1. Check Wallet Balances
-
-You can quickly view all tokens (including ERC20s and NFTs) held by any wallet address:
-
+### 2. Transaction Forensics
+Analyze complex transactions with full context:
 ```
-Assistant: Let me check the balances in this wallet for you.
+Assistant: Let me analyze this transaction's complete impact.
 
-[Uses get_evm_balances with walletAddress=0xYourWalletAddress]
+[Uses analyze_transaction_impact]
 
-This wallet contains:
-- 1.25 ETH (~$3,800)
-- 500 USDC ($500)
-- Several NFTs including a CryptoPunk and two Bored Apes
+Transaction breakdown:
+- Triggered 15 internal transactions
+- Changed 8 storage slots
+- Emitted 12 events
+- Sender has 500+ previous transactions
+- This was their largest transaction this month
 ```
 
-### 2. Analyze Token Information and Holders
-
-You can research specific tokens and their distribution:
-
+### 3. Token Risk Assessment
+Comprehensive token analysis across both platforms:
 ```
-Assistant: Let me analyze this token for you.
+Assistant: I'll perform a deep risk assessment of this token.
 
-[Uses get_evm_token_info with chainId=1 and tokenAddress=0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984]
+[Uses token_deep_analysis]
 
-UNI Token Information:
-- Current price: $5.32
-- Market cap: $2.7B 
-- 24h trading volume: $89M
-
-[Uses get_evm_token_holders with chainId=1 and tokenAddress=0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984]
-
-Top UNI Token Holders:
-1. 0x47173B170C64d16393a52e6C480b3Ad8c302ba1e: 5.2% of supply
-2. 0x1a9C8182C09F50C8318d769245beA52c32BE35BC: 3.8% of supply
-...
+Risk Assessment:
+⚠️ High concentration: Top 10 holders own 78%
+✅ Verified contract with clean code
+⚠️ Low liquidity: $50k daily volume
+✅ Active development: 50+ transfers in last hour
 ```
 
-### 3. Review Recent Transactions
-
-You can analyze transaction history for any address:
-
+### 4. Wallet Behavioral Analysis
+Profile wallets using combined historical and real-time data:
 ```
-Assistant: Here's a summary of recent transactions.
+Assistant: Let me create a behavioral profile for this wallet.
 
-[Uses get_evm_transactions with walletAddress=0xYourWalletAddress]
+[Uses profile_wallet_behavior]
 
-Recent activity:
-- Yesterday: Swapped 2 ETH for 3,500 UNI on Uniswap
-- 3 days ago: Withdrew 5 ETH from Binance
-- Last week: Minted an NFT for 0.08 ETH
-```
-
-### 4. Check Solana Balances
-
-You can also analyze Solana wallets:
-
-```
-Assistant: Let me check your Solana wallet balances.
-
-[Uses get_svm_balances with walletAddress=YourSolanaAddress]
-
-This wallet contains:
-- 12.5 SOL (~$875)
-- 2,500 USDC ($2,500)
-- Several SPL tokens including 150 BONK
+Wallet Profile:
+- Type: DeFi Power User
+- 1,250 total transactions
+- Interacts with 45 unique contracts
+- Portfolio: 60% stablecoins, 30% DeFi tokens, 10% NFTs
+- Activity level: High (50+ tx/month)
 ```
 
-Configure this server with Claude Desktop or other MCP clients to enable your AI assistant to retrieve and analyze on-chain data in real time.
+## Configuration
 
-## Prerequisites
+### Environment Variables
+- `DUNE_API_KEY`: Required API key from [Dune Analytics](https://docs.dune.com/api)
 
-*   [Bun](https://bun.sh/) (latest version recommended)
-*   A Dune API Key from [Sim API](https://docs.sim.dune.com/)
-
-## Setup
-
-1.  **Clone the repository (if applicable) or ensure you have the project files.**
-
-2.  **Install dependencies:**
-    ```bash
-    bun install
-    ```
-
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the project root and add your Dune API key:
-    ```env
-    DUNE_API_KEY=your_actual_dune_api_key_here
-    ```
-    Replace `your_actual_dune_api_key_here` with your valid key.
-
-## Running the Server
-
-*   **To run the server directly using Bun (for development/testing):**
-    ```bash
-    bun start
-    ```
-    The server will start and listen for MCP messages via stdio.
-
-*   **To build the server to JavaScript (for environments that require JS):**
-    Use the configured build script which utilizes the TypeScript compiler (`tsc`):
-    ```bash
-    bun run build
-    ```
-    This command executes `bunx tsc` as defined in `package.json`. `tsc` uses the `tsconfig.json` file to determine entry points (like `index.ts`) and compilation options, outputting the JavaScript files to the `./dist` directory.
-
-    You can then run the built server with Node.js or Bun:
-    ```bash
-    node dist/index.js 
-    # or
-    bun dist/index.js
-    ```
-
-    *Alternatively, if you wish to use Bun's built-in bundler directly (which may have different behavior or configuration needs than `tsc`), you would typically specify the entry point explicitly:* 
-    *`bun build ./index.ts --outdir ./dist`* 
-    *However, this project is set up to use `tsc` for builds via the `bun run build` script.*
-
-## Testing with MCP Inspector
-
-Once the server is running (e.g., via `bun start` in one terminal), you can connect to it using the MCP Inspector in another terminal:
-
-```bash
-# If running the TypeScript source directly
-npx @modelcontextprotocol/inspector bun run index.ts
-```
-Or, if you have built the server and are running the JavaScript version:
-```bash
-# If running the built JavaScript version from ./dist
-npx @modelcontextprotocol/inspector node dist/index.js
+### Adding New Blockscout Networks
+Edit the `BLOCKSCOUT_NETWORKS` object in `index.ts`:
+```typescript
+const BLOCKSCOUT_NETWORKS = {
+  "1": { name: "Ethereum", url: "https://eth.blockscout.com", chainId: "1" },
+  // Add new networks here
+};
 ```
 
-This will launch the Inspector UI, allowing you to discover and test the tools, resources, and prompts provided by this server.
+## Integrating with Claude Desktop
 
-## Integrating with MCP Clients (e.g., Claude Desktop)
-
-To use this server with an MCP client like Claude Desktop, you'll need to configure the client to launch this server. For Claude Desktop, you would modify its `claude_desktop_config.json` file (typically found at `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows).
-
-Below are example configurations. You can choose a server name (e.g., `dune_api_server` or `web3_stats_server`) that makes sense to you.
-
-**Example 1: Running the built JavaScript version with Node.js (Recommended for stability)**
-
-This assumes you have already run `bun run build` to create the `./dist` directory.
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
-    "dune_api_server": { // You can name this server entry whatever you like
+    "web3_stats_enhanced": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/TO/YOUR/mcp-web3-stats/dist/index.js"
+        "/path/to/mcp-web3-stats/dist/index.js"
       ],
       "env": {
-        "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key
+        "DUNE_API_KEY": "your_actual_dune_api_key_here"
       }
     }
   }
 }
 ```
 
-**Example 2: Running the TypeScript source directly with Bun**
+## Development
 
-This is convenient for development but might require specifying the full path to your Bun executable.
+```bash
+# Build TypeScript to JavaScript
+bun run build
 
-```json
-{
-  "mcpServers": {
-    "dune_api_server_dev": { // You can name this server entry whatever you like
-      "command": "/full/path/to/your/bun/executable", // e.g., /Users/username/.bun/bin/bun or C:\Users\username\.bun\bin\bun.exe
-      "args": [
-        "run",
-        "/ABSOLUTE/PATH/TO/YOUR/mcp-web3-stats/index.ts"
-      ],
-      "env": {
-        "DUNE_API_KEY": "your_actual_dune_api_key_here" // Replace with your key
-      }
-    }
-  }
-}
+# Run tests (when available)
+bun test
+
+# Run in development mode
+bun run index.ts
 ```
 
-**Important Configuration Notes:**
+## API Rate Limits
 
-*   **API Key:** You **MUST** replace `"your_actual_dune_api_key_here"` in the `env` block with your actual Dune API key. While the server script includes `dotenv` to load a local `.env` file, relying on the client (like Claude Desktop) to pass the environment variable via its configuration is more reliable for servers launched by external hosts.
-*   **Absolute Paths:** You **MUST** replace `/ABSOLUTE/PATH/TO/YOUR/...` with the correct and full absolute path to the `dist/index.js` file (for Node) or `index.ts` file (for Bun direct execution) and to the Bun executable if running TypeScript directly.
-*   **Bun Executable Path:** If using Bun directly (Example 2), the `command` might need to be the full, absolute path to your Bun executable (e.g., `~/.bun/bin/bun` on macOS/Linux, or the equivalent path on Windows) if it's not universally in the PATH for applications like Claude Desktop.
-*   **Restart Client:** After saving changes to `claude_desktop_config.json`, you must restart Claude Desktop for the changes to take effect.
+- **Dune API**: Rate limits depend on your plan
+- **Blockscout**: Most public instances have generous rate limits (typically 100+ requests/second)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Acknowledgments
+
+- [Dune Analytics](https://dune.com) for aggregated blockchain analytics
+- [Blockscout](https://blockscout.com) for real-time blockchain data
+- [Anthropic MCP](https://modelcontextprotocol.io) for the protocol specification
