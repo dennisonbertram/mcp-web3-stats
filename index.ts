@@ -1350,7 +1350,529 @@ server.tool(
   }
 );
 
-// Resource for EVM Supported Chains
+// ============================================
+// COMPOUND TOOLS - COMBINING DUNE + BLOCKSCOUT
+// ============================================
+
+// Compound tool: Smart Contract Deep Analysis
+server.tool(
+  "investigate_smart_contract",
+  "Comprehensive smart contract analysis combining real-time data from Blockscout with historical analytics from Dune.",
+  {
+    contractAddress: z.string().describe("The smart contract address to investigate"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)"),
+  },
+  async ({ contractAddress, chainId }) => {
+    try {
+      // Fetch data from both sources in parallel
+      const [blockscoutInfo, blockscoutMethods, duneTokenInfo] = await Promise.all([
+        // Get contract info from Blockscout
+        callBlockscoutApi(chainId, `/smart-contracts/${contractAddress}`).catch(err => ({ error: err.message })),
+        // Get contract methods from Blockscout
+        callBlockscoutApi(chainId, `/smart-contracts/${contractAddress}/methods-read`)
+          .then(readMethods => 
+            callBlockscoutApi(chainId, `/smart-contracts/${contractAddress}/methods-write`)
+              .then(writeMethods => ({ readMethods, writeMethods }))
+          )
+          .catch(err => ({ error: err.message })),
+        // Get token analytics from Dune if available
+        callDuneApi(`/v1/evm/token-info/${chainId}/${contractAddress}`, new URLSearchParams({ chain_ids: chainId }))
+          .catch(err => ({ error: err.message }))
+      ]);
+
+      // Combine the results
+      const analysis = {
+        contract: {
+          address: contractAddress,
+          chainId: chainId,
+          network: BLOCKSCOUT_NETWORKS[chainId]?.name || `Chain ${chainId}`,
+        },
+        realTimeData: {
+          contractInfo: blockscoutInfo,
+          methods: blockscoutMethods,
+        },
+        analytics: {
+          tokenMetrics: duneTokenInfo,
+        },
+        summary: {
+          isVerified: blockscoutInfo?.is_verified || false,
+          hasTokenInfo: !duneTokenInfo?.error,
+          contractType: blockscoutInfo?.proxy_type || "standard",
+          language: blockscoutInfo?.language || "unknown",
+        }
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(analysis, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `Error analyzing contract: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Compound tool: Transaction Impact Analysis
+server.tool(
+  "analyze_transaction_impact",
+  "Deep dive into a transaction's full impact by combining Blockscout's detailed traces with Dune's wallet context.",
+  {
+    txHash: z.string().describe("The transaction hash to analyze"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)"),
+  },
+  async ({ txHash, chainId }) => {
+    try {
+      // First get transaction details from Blockscout
+      const txDetails = await callBlockscoutApi(chainId, `/transactions/${txHash}`);
+      
+      // Fetch additional transaction data in parallel
+      const [txLogs, txInternalTxs, txStateChanges, senderActivity, receiverActivity] = await Promise.all([
+        // Get logs from Blockscout
+        callBlockscoutApi(chainId, `/transactions/${txHash}/logs`).catch(err => ({ error: err.message })),
+        // Get internal transactions
+        callBlockscoutApi(chainId, `/transactions/${txHash}/internal-transactions`).catch(err => ({ error: err.message })),
+        // Get state changes
+        callBlockscoutApi(chainId, `/transactions/${txHash}/state-changes`).catch(err => ({ error: err.message })),
+        // Get sender's recent activity from Dune
+        txDetails.from?.hash ? 
+          callDuneApi(`/v1/evm/activity/${txDetails.from.hash}`, new URLSearchParams({ limit: "5" }))
+            .catch(err => ({ error: err.message })) : null,
+        // Get receiver's recent activity from Dune (if not a contract creation)
+        txDetails.to?.hash && !txDetails.to.is_contract ? 
+          callDuneApi(`/v1/evm/activity/${txDetails.to.hash}`, new URLSearchParams({ limit: "5" }))
+            .catch(err => ({ error: err.message })) : null,
+      ]);
+
+      // Analyze the impact
+      const impact = {
+        transaction: {
+          hash: txHash,
+          chainId: chainId,
+          network: BLOCKSCOUT_NETWORKS[chainId]?.name || `Chain ${chainId}`,
+          status: txDetails.status,
+          timestamp: txDetails.timestamp,
+          blockNumber: txDetails.block,
+        },
+        participants: {
+          from: {
+            address: txDetails.from?.hash,
+            isContract: txDetails.from?.is_contract,
+            recentActivity: senderActivity,
+          },
+          to: {
+            address: txDetails.to?.hash,
+            isContract: txDetails.to?.is_contract,
+            recentActivity: receiverActivity,
+          },
+        },
+        execution: {
+          gasUsed: txDetails.gas_used,
+          gasPrice: txDetails.gas_price,
+          value: txDetails.value,
+          fee: txDetails.fee?.value,
+        },
+        effects: {
+          logs: txLogs,
+          internalTransactions: txInternalTxs,
+          stateChanges: txStateChanges,
+          tokenTransfers: txDetails.token_transfers,
+        },
+        analysis: {
+          complexity: txInternalTxs?.items?.length > 0 ? "complex" : "simple",
+          hasTokenTransfers: txDetails.token_transfers?.length > 0,
+          hasStateChanges: txStateChanges?.items?.length > 0,
+          eventCount: txLogs?.items?.length || 0,
+        }
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(impact, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `Error analyzing transaction: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Compound tool: Token Forensics
+server.tool(
+  "token_deep_analysis",
+  "Comprehensive token analysis combining real-time transfers from Blockscout with holder analytics from Dune.",
+  {
+    tokenAddress: z.string().describe("The token contract address"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)"),
+  },
+  async ({ tokenAddress, chainId }) => {
+    try {
+      // Fetch data from both sources in parallel
+      const [
+        blockscoutTokenInfo,
+        blockscoutTransfers,
+        blockscoutHolders,
+        duneTokenInfo,
+        duneHolders
+      ] = await Promise.all([
+        // Blockscout data
+        callBlockscoutApi(chainId, `/tokens/${tokenAddress}`).catch(err => ({ error: err.message })),
+        callBlockscoutApi(chainId, `/tokens/${tokenAddress}/transfers`, new URLSearchParams({ items_count: "10" }))
+          .catch(err => ({ error: err.message })),
+        callBlockscoutApi(chainId, `/tokens/${tokenAddress}/holders`, new URLSearchParams({ items_count: "10" }))
+          .catch(err => ({ error: err.message })),
+        // Dune data
+        callDuneApi(`/v1/evm/token-info/${chainId}/${tokenAddress}`, new URLSearchParams({ chain_ids: chainId }))
+          .catch(err => ({ error: err.message })),
+        callDuneApi(`/v1/evm/token-holders/${chainId}/${tokenAddress}`, new URLSearchParams({ limit: "10" }))
+          .catch(err => ({ error: err.message }))
+      ]);
+
+      // Analyze holder concentration
+      const holderAnalysis = {
+        concentration: "unknown",
+        topHolderPercentage: 0,
+      };
+      
+      if (duneHolders?.items?.length > 0) {
+        const top10Balance = duneHolders.items.reduce((sum: number, holder: any) => 
+          sum + parseFloat(holder.percentage_of_total_supply || "0"), 0
+        );
+        holderAnalysis.concentration = top10Balance > 50 ? "high" : top10Balance > 25 ? "medium" : "low";
+        holderAnalysis.topHolderPercentage = top10Balance;
+      }
+
+      const forensics = {
+        token: {
+          address: tokenAddress,
+          chainId: chainId,
+          network: BLOCKSCOUT_NETWORKS[chainId]?.name || `Chain ${chainId}`,
+        },
+        basicInfo: {
+          name: blockscoutTokenInfo?.name || duneTokenInfo?.name,
+          symbol: blockscoutTokenInfo?.symbol || duneTokenInfo?.symbol,
+          decimals: blockscoutTokenInfo?.decimals || duneTokenInfo?.decimals,
+          type: blockscoutTokenInfo?.type || duneTokenInfo?.type,
+          totalSupply: blockscoutTokenInfo?.total_supply || duneTokenInfo?.total_supply,
+        },
+        marketMetrics: {
+          price: duneTokenInfo?.current_price,
+          marketCap: duneTokenInfo?.market_cap || blockscoutTokenInfo?.circulating_market_cap,
+          volume24h: duneTokenInfo?.volume_24h || blockscoutTokenInfo?.volume_24h,
+          holderCount: blockscoutTokenInfo?.holders_count || duneTokenInfo?.holder_count,
+        },
+        activity: {
+          recentTransfers: blockscoutTransfers,
+          transferCount24h: blockscoutTokenInfo?.counters?.transfers_count_24h,
+        },
+        holders: {
+          topHoldersBlockscout: blockscoutHolders,
+          topHoldersDune: duneHolders,
+          analysis: holderAnalysis,
+        },
+        risks: {
+          isVerified: !blockscoutTokenInfo?.error && blockscoutTokenInfo?.address !== undefined,
+          hasLiquidity: duneTokenInfo?.volume_24h > 0,
+          holderConcentration: holderAnalysis.concentration,
+          warnings: []
+        }
+      };
+
+      // Add risk warnings
+      if (holderAnalysis.concentration === "high") {
+        forensics.risks.warnings.push("High holder concentration - top 10 holders own >50% of supply");
+      }
+      if (!forensics.risks.isVerified) {
+        forensics.risks.warnings.push("Token contract not found or not verified");
+      }
+      if (!forensics.risks.hasLiquidity) {
+        forensics.risks.warnings.push("Low or no trading volume in last 24h");
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(forensics, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `Error analyzing token: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Compound tool: Wallet Behavior Profiler
+server.tool(
+  "profile_wallet_behavior",
+  "Create a comprehensive behavioral profile of a wallet by combining real-time activity from Blockscout with historical patterns from Dune.",
+  {
+    walletAddress: z.string().describe("The wallet address to profile"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)"),
+  },
+  async ({ walletAddress, chainId }) => {
+    try {
+      // Fetch comprehensive wallet data from both sources
+      const [
+        blockscoutInfo,
+        blockscoutTxs,
+        blockscoutTokens,
+        blockscoutInternalTxs,
+        duneBalances,
+        duneActivity
+      ] = await Promise.all([
+        // Blockscout data
+        callBlockscoutApi(chainId, `/addresses/${walletAddress}`).catch(err => ({ error: err.message })),
+        callBlockscoutApi(chainId, `/addresses/${walletAddress}/transactions`, new URLSearchParams({ items_count: "20" }))
+          .catch(err => ({ error: err.message })),
+        callBlockscoutApi(chainId, `/addresses/${walletAddress}/tokens`).catch(err => ({ error: err.message })),
+        callBlockscoutApi(chainId, `/addresses/${walletAddress}/internal-transactions`, new URLSearchParams({ items_count: "10" }))
+          .catch(err => ({ error: err.message })),
+        // Dune data
+        callDuneApi(`/v1/evm/balances/${walletAddress}`, new URLSearchParams({ chain_ids: chainId }))
+          .catch(err => ({ error: err.message })),
+        callDuneApi(`/v1/evm/activity/${walletAddress}`, new URLSearchParams({ limit: "20" }))
+          .catch(err => ({ error: err.message }))
+      ]);
+
+      // Analyze transaction patterns
+      const txPatterns = {
+        totalTransactions: blockscoutInfo?.transaction_count || 0,
+        contractInteractions: 0,
+        uniqueContracts: new Set(),
+        transfersIn: 0,
+        transfersOut: 0,
+      };
+
+      if (blockscoutTxs?.items) {
+        blockscoutTxs.items.forEach((tx: any) => {
+          if (tx.to?.is_contract) {
+            txPatterns.contractInteractions++;
+            txPatterns.uniqueContracts.add(tx.to.hash);
+          }
+          if (tx.from?.hash?.toLowerCase() === walletAddress.toLowerCase()) {
+            txPatterns.transfersOut++;
+          } else {
+            txPatterns.transfersIn++;
+          }
+        });
+      }
+
+      // Analyze token portfolio
+      const portfolio = {
+        nativeBalance: blockscoutInfo?.coin_balance,
+        tokenCount: 0,
+        nftCount: 0,
+        defiTokens: 0,
+        stablecoins: 0,
+      };
+
+      if (duneBalances?.items) {
+        duneBalances.items.forEach((token: any) => {
+          portfolio.tokenCount++;
+          if (token.token_type === "ERC721" || token.token_type === "ERC1155") {
+            portfolio.nftCount++;
+          }
+          // Check for stablecoins
+          if (["USDC", "USDT", "DAI", "BUSD"].includes(token.symbol?.toUpperCase())) {
+            portfolio.stablecoins++;
+          }
+          // Simple DeFi token detection
+          if (token.symbol?.toLowerCase().includes("lp") || 
+              token.name?.toLowerCase().includes("liquidity") ||
+              token.name?.toLowerCase().includes("vault")) {
+            portfolio.defiTokens++;
+          }
+        });
+      }
+
+      // Create behavioral profile
+      const profile = {
+        wallet: {
+          address: walletAddress,
+          chainId: chainId,
+          network: BLOCKSCOUT_NETWORKS[chainId]?.name || `Chain ${chainId}`,
+          ens: blockscoutInfo?.ens_domain_name,
+          createdAt: blockscoutInfo?.creation_transaction_hash ? "tracked" : "unknown",
+        },
+        activity: {
+          firstSeen: blockscoutInfo?.creation_transaction_hash,
+          totalTransactions: txPatterns.totalTransactions,
+          contractInteractions: txPatterns.contractInteractions,
+          uniqueContractsUsed: txPatterns.uniqueContracts.size,
+          recentTransactions: blockscoutTxs,
+          internalTransactions: blockscoutInternalTxs,
+        },
+        portfolio: portfolio,
+        behavior: {
+          type: determineWalletType(txPatterns, portfolio),
+          activityLevel: txPatterns.totalTransactions > 1000 ? "high" : 
+                        txPatterns.totalTransactions > 100 ? "medium" : "low",
+          primaryUse: determinePrimaryUse(txPatterns, portfolio),
+        },
+        duneMetrics: {
+          balances: duneBalances,
+          recentActivity: duneActivity,
+        }
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(profile, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `Error profiling wallet: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Helper function to determine wallet type
+function determineWalletType(txPatterns: any, portfolio: any): string {
+  if (portfolio.nftCount > portfolio.tokenCount * 0.5) return "NFT Collector";
+  if (portfolio.defiTokens > 2) return "DeFi User";
+  if (txPatterns.contractInteractions > txPatterns.totalTransactions * 0.7) return "Smart Contract Power User";
+  if (portfolio.stablecoins > portfolio.tokenCount * 0.5) return "Stablecoin Holder";
+  if (txPatterns.totalTransactions < 10) return "New/Inactive Wallet";
+  return "General User";
+}
+
+// Helper function to determine primary wallet use
+function determinePrimaryUse(txPatterns: any, portfolio: any): string {
+  const uses = [];
+  if (portfolio.nftCount > 0) uses.push("NFT Trading");
+  if (portfolio.defiTokens > 0) uses.push("DeFi");
+  if (portfolio.stablecoins > 0) uses.push("Stablecoin Transactions");
+  if (txPatterns.contractInteractions > 10) uses.push("dApp Interactions");
+  if (uses.length === 0) uses.push("Basic Transfers");
+  return uses.join(", ");
+}
+
+// ============================================
+// RESOURCES
+// ============================================
+
+// Resource for Unified Network Support
+server.resource(
+  "supported_networks",
+  "web3-stats://supported-networks",
+  {
+    name: "Supported Networks",
+    description: "Unified list of networks supported by both Dune and Blockscout APIs with their capabilities.",
+    mimeType: "application/json"
+  },
+  async (uri) => {
+    try {
+      // Get Dune supported chains
+      const duneChains = await callDuneApi("/v1/evm/supported-chains").catch(err => ({ error: err.message }));
+      
+      // Build unified network list
+      const networks: any = {};
+      
+      // Add known Blockscout networks
+      Object.entries(BLOCKSCOUT_NETWORKS).forEach(([chainId, network]) => {
+        networks[chainId] = {
+          chainId: chainId,
+          name: network.name,
+          blockscout: {
+            available: true,
+            url: network.url,
+            apiVersion: "v2"
+          },
+          dune: {
+            available: false,
+            capabilities: {}
+          }
+        };
+      });
+      
+      // Merge Dune capabilities
+      if (duneChains?.chains) {
+        duneChains.chains.forEach((chain: any) => {
+          const chainId = String(chain.chain_id);
+          if (!networks[chainId]) {
+            networks[chainId] = {
+              chainId: chainId,
+              name: chain.name,
+              blockscout: {
+                available: false
+              },
+              dune: {
+                available: true,
+                capabilities: {}
+              }
+            };
+          } else {
+            networks[chainId].dune = {
+              available: true,
+              capabilities: {}
+            };
+          }
+          
+          // Add Dune capabilities
+          Object.entries(chain.endpoints || {}).forEach(([endpoint, supported]) => {
+            if (supported) {
+              networks[chainId].dune.capabilities[endpoint] = true;
+            }
+          });
+        });
+      }
+      
+      // Sort by chain ID
+      const sortedNetworks = Object.fromEntries(
+        Object.entries(networks).sort(([a], [b]) => Number(a) - Number(b))
+      );
+      
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: "application/json",
+          text: JSON.stringify({
+            networks: sortedNetworks,
+            summary: {
+              totalNetworks: Object.keys(sortedNetworks).length,
+              blockscoutOnly: Object.values(sortedNetworks).filter((n: any) => n.blockscout.available && !n.dune.available).length,
+              duneOnly: Object.values(sortedNetworks).filter((n: any) => !n.blockscout.available && n.dune.available).length,
+              bothApis: Object.values(sortedNetworks).filter((n: any) => n.blockscout.available && n.dune.available).length,
+            }
+          }, null, 2),
+        }],
+      };
+    } catch (error: any) {
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: "text/plain",
+          text: `Error fetching network support: ${error.message}`,
+        }],
+      };
+    }
+  }
+);
+
+// Resource for EVM Supported Chains (Dune)
 server.resource(
   "dune_evm_supported_chains", // Internal registration name
   "dune://evm/supported-chains", // The URI clients will use to request this resource
@@ -1382,7 +1904,174 @@ server.resource(
   }
 );
 
-// MCP Prompts
+// ============================================
+// MCP PROMPTS
+// ============================================
+
+// Enhanced wallet overview using both APIs
+server.prompt(
+  "comprehensive_wallet_analysis",
+  "Perform a deep analysis of a wallet using both Blockscout and Dune APIs for comprehensive insights.",
+  {
+    walletAddress: z.string().describe("The wallet address to analyze"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)")
+  },
+  ({ walletAddress, chainId }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please perform a comprehensive analysis of wallet ${walletAddress} on chain ${chainId}. I need:
+1. A behavioral profile of the wallet
+2. Current portfolio composition
+3. Recent transaction patterns
+4. Risk assessment`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll perform a comprehensive analysis using the 'profile_wallet_behavior' tool which combines data from both Blockscout and Dune APIs to give you detailed insights about wallet ${walletAddress} on chain ${chainId}.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Smart contract investigation prompt
+server.prompt(
+  "smart_contract_deep_dive",
+  "Investigate a smart contract thoroughly using combined Blockscout and Dune data.",
+  {
+    contractAddress: z.string().describe("The smart contract address to investigate"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)")
+  },
+  ({ contractAddress, chainId }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `I need a thorough investigation of smart contract ${contractAddress} on chain ${chainId}. Please provide:
+1. Contract verification status and source code availability
+2. Available read/write methods
+3. Token metrics if applicable
+4. Recent usage patterns`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll investigate smart contract ${contractAddress} on chain ${chainId} using the 'investigate_smart_contract' tool, which combines real-time Blockscout data with Dune analytics to provide comprehensive contract analysis.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Token forensics prompt
+server.prompt(
+  "token_risk_assessment",
+  "Perform a detailed risk assessment of a token using multi-source analysis.",
+  {
+    tokenAddress: z.string().describe("The token contract address"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)")
+  },
+  ({ tokenAddress, chainId }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please perform a comprehensive risk assessment of token ${tokenAddress} on chain ${chainId}. I need to understand:
+1. Holder concentration and distribution
+2. Recent transfer activity
+3. Liquidity and trading volume
+4. Any red flags or warnings`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll perform a detailed token analysis using the 'token_deep_analysis' tool for ${tokenAddress} on chain ${chainId}. This will combine real-time transfer data from Blockscout with holder analytics from Dune to provide a comprehensive risk assessment.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Transaction impact analysis prompt
+server.prompt(
+  "transaction_post_mortem",
+  "Analyze a transaction's full impact and context using advanced tools.",
+  {
+    txHash: z.string().describe("The transaction hash to analyze"),
+    chainId: z.string().describe("The chain ID (e.g., '1' for Ethereum, '137' for Polygon)")
+  },
+  ({ txHash, chainId }) => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please analyze transaction ${txHash} on chain ${chainId}. I want to understand:
+1. What exactly happened in this transaction
+2. All internal transactions and state changes
+3. Context about the sender and receiver
+4. Overall impact and complexity`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll analyze transaction ${txHash} on chain ${chainId} using the 'analyze_transaction_impact' tool, which provides deep insights by combining Blockscout's detailed traces with Dune's wallet context data.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Network comparison prompt
+server.prompt(
+  "compare_networks",
+  "Compare supported networks and their API capabilities.",
+  {},
+  () => {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Show me all supported blockchain networks and compare which APIs (Dune vs Blockscout) are available for each chain.`
+          }
+        },
+        {
+          role: "assistant",
+          content: {
+            type: "text",
+            text: `I'll fetch the unified network support information that shows all supported chains and their API availability across both Dune and Blockscout.`
+          }
+        }
+      ]
+    };
+  }
+);
+
+// Legacy prompts for backward compatibility
 server.prompt(
   "evm_wallet_overview",
   {
