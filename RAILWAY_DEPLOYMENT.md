@@ -391,5 +391,5 @@ While this guide focuses on Railway, the server can also deploy to:
 
 For issues or questions:
 - **Railway**: [railway.app/help](https://railway.app/help)
-- **MCP Server**: [GitHub Issues](https://github.com/crazyrabbitLTC/mcp-web3-stats/issues)
+- **MCP Server**: [GitHub Issues](https://github.com/dennisonbertram/mcp-web3-stats/issues)
 - **MCP Protocol**: [modelcontextprotocol.io](https://modelcontextprotocol.io)

@@ -16,12 +16,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/crazyrabbitLTC/mcp-web3-stats"
+    "url": "https://github.com/dennisonbertram/mcp-web3-stats"
   },
   "bugs": {
-    "url": "https://github.com/crazyrabbitLTC/mcp-web3-stats/issues"
+    "url": "https://github.com/dennisonbertram/mcp-web3-stats/issues"
   },
-  "homepage": "https://github.com/crazyrabbitLTC/mcp-web3-stats#readme",
+  "homepage": "https://github.com/dennisonbertram/mcp-web3-stats#readme",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
