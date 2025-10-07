@@ -34,7 +34,8 @@ In the Railway dashboard or via CLI, set these environment variables:
 DUNE_API_KEY=your_dune_api_key_here
 
 # Railway automatically sets PORT - no configuration needed
-# Server auto-detects Railway and binds to 0.0.0.0
+# Server binds to :: (IPv6 wildcard) for Railway compatibility
+# :: accepts both IPv4 and IPv6 connections
 ```
 
 #### Authentication Variables (Highly Recommended)
@@ -108,7 +109,7 @@ curl -X POST https://your-app.railway.app/mcp \
 |----------|----------|---------|-------------|
 | `DUNE_API_KEY` | ✅ Yes | - | Your Dune Analytics API key |
 | `PORT` | Auto | 3000 | Railway sets this automatically |
-| `MCP_BIND_HOST` | No | Auto-detected | Auto-detects Railway (0.0.0.0) vs local (127.0.0.1) |
+| `MCP_BIND_HOST` | No | `::` | Defaults to :: (IPv6 wildcard) for Railway compatibility |
 | `MCP_AUTH_ENABLED` | No | `false` | Enable authentication (set to `true` for production) |
 | `MCP_API_KEYS` | No | - | Comma-separated list of valid API keys |
 | `MCP_BASIC_AUTH` | No | - | Comma-separated `username:password` pairs |
@@ -274,7 +275,7 @@ For moderate usage (24/7 availability):
 
 **Check:**
 - `DUNE_API_KEY` is set
-- `MCP_BIND_HOST` is `0.0.0.0` (not `127.0.0.1`)
+- Server binds to `::` (IPv6 wildcard - default behavior)
 - Build completed successfully
 
 **View logs:**
