@@ -61,7 +61,7 @@ node -e "console.log('mcp_' + require('crypto').randomBytes(32).toString('hex'))
 
 Railway will automatically:
 1. Detect the `railway.json` configuration
-2. Build using `bun install && bun run build`
+2. Build using `npm install && npm run build`
 3. Start with `node dist/src/index.js --transport http --port $PORT`
 4. Expose the service on a public URL
 
