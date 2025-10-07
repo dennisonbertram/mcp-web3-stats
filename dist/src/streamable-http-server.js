@@ -6,18 +6,27 @@ import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { VERSION } from './utils/constants.js';
+import { validateAuth, sendAuthRequired, getAuthConfigFromEnv } from './auth-middleware.js';
 /**
  * Starts a modern Streamable HTTP server for MCP
  * @param server The MCP server instance
  * @param port The port to listen on
+ * @param authConfig Optional authentication configuration
  * @returns The HTTP server instance
  */
-export async function startStreamableHttpServer(server, port) {
+export async function startStreamableHttpServer(server, port, authConfig) {
+    // Use provided auth config or get from environment
+    const auth = authConfig || getAuthConfigFromEnv();
     // Map to store transport instances by session ID
     const transports = new Map();
     // Create HTTP server
     const httpServer = createServer(async (req, res) => {
         const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
+        // Validate authentication (health checks are always allowed)
+        if (!validateAuth(req, auth)) {
+            sendAuthRequired(res);
+            return;
+        }
         // Health check endpoint
         if (url.pathname === '/health' && req.method === 'GET') {
             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -143,15 +152,25 @@ export async function startStreamableHttpServer(server, port) {
             }));
         }
     });
-    // Start listening on localhost only for security
+    // Start listening on specified host (localhost for dev, 0.0.0.0 for production)
+    const host = process.env.MCP_BIND_HOST || '127.0.0.1';
     return new Promise((resolve, reject) => {
-        httpServer.listen(port, '127.0.0.1', () => {
+        httpServer.listen(port, host, () => {
             console.log(`MCP Web3 Stats v${VERSION} started with modern Streamable HTTP transport`);
-            console.log(`Server running at http://127.0.0.1:${port}/`);
+            console.log(`Server running at http://${host}:${port}/`);
             console.log('');
             console.log('Endpoints:');
-            console.log(`  MCP:     http://127.0.0.1:${port}/mcp`);
-            console.log(`  Health:  http://127.0.0.1:${port}/health`);
+            console.log(`  MCP:     http://${host}:${port}/mcp`);
+            console.log(`  Health:  http://${host}:${port}/health`);
+            if (auth.enabled) {
+                console.log('');
+                console.log('🔒 Authentication: ENABLED');
+                console.log(`   Methods: ${auth.apiKeys ? 'Bearer Token, X-API-Key' : ''}${auth.basicAuthCredentials ? ', Basic Auth' : ''}`);
+            }
+            else {
+                console.log('');
+                console.log('⚠️  Authentication: DISABLED (development mode)');
+            }
             console.log('');
             console.log('Test with cURL:');
             console.log('');
