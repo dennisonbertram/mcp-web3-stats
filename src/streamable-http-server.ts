@@ -166,9 +166,10 @@ export async function startStreamableHttpServer(
   });
 
   // Start listening on specified host
-  // Default to 0.0.0.0 for HTTP mode (required for Railway/cloud deployments)
+  // Default to :: (IPv6 wildcard) for Railway/cloud deployments
+  // :: accepts both IPv4 and IPv6 connections (required by Railway)
   // Override with MCP_BIND_HOST=127.0.0.1 for local testing if needed
-  const host = process.env.MCP_BIND_HOST || '0.0.0.0';
+  const host = process.env.MCP_BIND_HOST || '::';
   return new Promise<Server>((resolve, reject) => {
     httpServer.listen(port, host, () => {
       console.log(`MCP Web3 Stats v${VERSION} started with modern Streamable HTTP transport`);

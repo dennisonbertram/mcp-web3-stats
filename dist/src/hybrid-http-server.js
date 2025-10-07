@@ -181,11 +181,15 @@ export async function startHybridHttpServer(server, port) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
     });
-    // Start listening on localhost only
+    // Start listening on specified host
+    // Default to :: (IPv6 wildcard) for Railway/cloud deployments
+    // :: accepts both IPv4 and IPv6 connections (required by Railway)
+    // Override with MCP_BIND_HOST=127.0.0.1 for local testing if needed
+    const host = process.env.MCP_BIND_HOST || '::';
     return new Promise((resolve, reject) => {
-        httpServer.listen(port, '127.0.0.1', () => {
+        httpServer.listen(port, host, () => {
             console.log(`MCP Web3 Stats v${VERSION} started with hybrid HTTP/SSE transport`);
-            console.log(`Server running at http://127.0.0.1:${port}/`);
+            console.log(`Server running at http://${host}:${port}/`);
             console.log('');
             console.log('========== MODERN ENDPOINTS (2025-03-26) ==========');
             console.log(`  MCP:     http://127.0.0.1:${port}/mcp`);

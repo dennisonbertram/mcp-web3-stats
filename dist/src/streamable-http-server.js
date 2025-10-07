@@ -22,19 +22,19 @@ export async function startStreamableHttpServer(server, port, authConfig) {
     // Create HTTP server
     const httpServer = createServer(async (req, res) => {
         const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
-        // Validate authentication (health checks are always allowed)
-        if (!validateAuth(req, auth)) {
-            sendAuthRequired(res);
-            return;
-        }
-        // Health check endpoint
+        // Health check endpoint - MUST be first, before any auth checks
         if (url.pathname === '/health' && req.method === 'GET') {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 status: 'ok',
                 version: VERSION,
-                sessions: transports.size
+                uptime: process.uptime()
             }));
+            return;
+        }
+        // Validate authentication for all other endpoints
+        if (!validateAuth(req, auth)) {
+            sendAuthRequired(res);
             return;
         }
         // Main MCP endpoint
@@ -152,8 +152,11 @@ export async function startStreamableHttpServer(server, port, authConfig) {
             }));
         }
     });
-    // Start listening on specified host (localhost for dev, 0.0.0.0 for production)
-    const host = process.env.MCP_BIND_HOST || '127.0.0.1';
+    // Start listening on specified host
+    // Default to :: (IPv6 wildcard) for Railway/cloud deployments
+    // :: accepts both IPv4 and IPv6 connections (required by Railway)
+    // Override with MCP_BIND_HOST=127.0.0.1 for local testing if needed
+    const host = process.env.MCP_BIND_HOST || '::';
     return new Promise((resolve, reject) => {
         httpServer.listen(port, host, () => {
             console.log(`MCP Web3 Stats v${VERSION} started with modern Streamable HTTP transport`);

@@ -36,7 +36,8 @@ async function main() {
     const args = process.argv.slice(2);
     // Parse transport mode and port
     let transportMode = 'stdio';
-    let port = 3000;
+    // Default to Railway's PORT env var if available, otherwise 3000
+    let port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
     const transportIndex = args.findIndex(arg => arg === '--transport' || arg === '-t');
     if (transportIndex !== -1 && args[transportIndex + 1]) {
         const mode = args[transportIndex + 1].toLowerCase();
