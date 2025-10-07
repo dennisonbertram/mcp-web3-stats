@@ -1,0 +1,76 @@
+{
+  "tools": {
+    "dune": [
+      "ping_dune_server",
+      "get_evm_balances",
+      "get_evm_activity",
+      "get_evm_collectibles",
+      "get_evm_transactions",
+      "get_evm_token_info",
+      "get_evm_token_holders",
+      "get_svm_balances",
+      "get_svm_transactions"
+    ],
+    "blockscout": [
+      "ping_blockscout",
+      "blockscout_search",
+      "blockscout_address_info",
+      "blockscout_address_transactions",
+      "blockscout_address_internal_txs",
+      "blockscout_address_logs",
+      "blockscout_address_token_balances",
+      "blockscout_transaction_details",
+      "blockscout_transaction_logs",
+      "blockscout_transaction_internal_txs",
+      "blockscout_transaction_raw_trace",
+      "blockscout_transaction_state_changes",
+      "blockscout_block_details",
+      "blockscout_block_transactions",
+      "blockscout_latest_blocks",
+      "blockscout_contract_info",
+      "blockscout_contract_methods",
+      "blockscout_read_contract",
+      "blockscout_verified_contracts",
+      "blockscout_token_info",
+      "blockscout_token_transfers",
+      "blockscout_token_holders",
+      "blockscout_nft_instances",
+      "blockscout_nft_metadata"
+    ],
+    "compound": [
+      "investigate_smart_contract",
+      "analyze_transaction_impact",
+      "token_deep_analysis",
+      "profile_wallet_behavior"
+    ]
+  },
+  "resources": [
+    "supported_networks",
+    "dune_evm_supported_chains",
+    "dex_router_contracts",
+    "stablecoin_addresses",
+    "bridge_contracts",
+    "security_patterns",
+    "token_categories"
+  ],
+  "prompts": [
+    "comprehensive_wallet_analysis",
+    "smart_contract_deep_dive",
+    "token_risk_assessment",
+    "transaction_post_mortem",
+    "compare_networks",
+    "defi_protocol_investigation",
+    "token_launch_investigation",
+    "whale_movement_analysis",
+    "nft_collection_forensics",
+    "bridge_transaction_verification",
+    "mev_activity_detection",
+    "gas_optimization_audit",
+    "dao_treasury_audit",
+    "security_vulnerability_scan",
+    "yield_strategy_comparison",
+    "evm_wallet_overview",
+    "analyze_erc20_token",
+    "svm_address_check"
+  ]
+}

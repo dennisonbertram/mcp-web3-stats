@@ -2,7 +2,6 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import dotenv from "dotenv";
 
 import { VERSION } from "./utils/constants.js";
@@ -10,6 +9,8 @@ import { registerAllTools } from "./tools/index.js";
 import { registerAllResources } from "./resources/index.js";
 import { registerAllPrompts } from "./prompts/index.js";
 import { startSSEServer } from "./sse-server.js";
+import { startStreamableHttpServer } from "./streamable-http-server.js";
+import { startHybridHttpServer } from "./hybrid-http-server.js";
 
 // Load environment variables
 dotenv.config();
@@ -42,14 +43,22 @@ async function main() {
   const args = process.argv.slice(2);
   
   // Parse transport mode and port
-  let transportMode: 'stdio' | 'sse' = 'stdio';
+  let transportMode: 'stdio' | 'http' | 'sse-legacy' | 'hybrid' = 'stdio';
   let port = 3000;
-  
+
   const transportIndex = args.findIndex(arg => arg === '--transport' || arg === '-t');
   if (transportIndex !== -1 && args[transportIndex + 1]) {
     const mode = args[transportIndex + 1].toLowerCase();
-    if (mode === 'sse' || mode === 'http') {
-      transportMode = 'sse';
+    if (mode === 'sse') {
+      console.warn('⚠️  "sse" is deprecated. Using modern "http" transport instead.');
+      console.warn('   For legacy SSE support, use --transport sse-legacy');
+      transportMode = 'http';
+    } else if (['http', 'sse-legacy', 'hybrid', 'stdio'].includes(mode)) {
+      transportMode = mode as any;
+    } else {
+      console.error(`Unknown transport mode: ${mode}`);
+      console.error('Valid modes: stdio, http, sse-legacy, hybrid');
+      process.exit(1);
     }
   }
   
@@ -76,8 +85,14 @@ USAGE:
 OPTIONS:
   -h, --help                Show this help message
   -v, --version             Show version information
-  -t, --transport <mode>    Transport mode: 'stdio' (default) or 'sse'/'http'
-  -p, --port <number>       Port for SSE transport (default: 3000)
+  -t, --transport <mode>    Transport mode: 'stdio' (default), 'http', 'sse-legacy', 'hybrid'
+  -p, --port <number>       Port for HTTP transports (default: 3000)
+
+TRANSPORT MODES:
+  stdio       Standard input/output (default, for CLI tools)
+  http        Modern Streamable HTTP (MCP 2025-03-26, recommended for HTTP)
+  sse-legacy  Legacy SSE transport (deprecated, use only for backwards compatibility)
+  hybrid      Support both modern and legacy clients
 
 ENVIRONMENT:
   DUNE_API_KEY   Required API key for the Dune API (https://docs.sim.dune.com/)
@@ -85,9 +100,12 @@ ENVIRONMENT:
 EXAMPLES:
   # Run in stdio mode (default)
   mcp-web3-stats
-  
-  # Run in HTTP/SSE mode on port 8080
-  mcp-web3-stats --transport sse --port 8080
+
+  # Run with modern HTTP transport
+  mcp-web3-stats --transport http --port 8080
+
+  # Run with hybrid support (modern + legacy)
+  mcp-web3-stats --transport hybrid --port 3000
 
 DESCRIPTION:
   This MCP server provides comprehensive blockchain analysis capabilities by
@@ -97,9 +115,16 @@ DESCRIPTION:
     process.exit(0);
   }
 
-  if (transportMode === 'sse') {
+  if (transportMode === 'http') {
+    await startStreamableHttpServer(server, port);
+  } else if (transportMode === 'sse-legacy') {
+    console.warn('⚠️  Using deprecated SSE transport (2024-11-05 spec)');
+    console.warn('   Please upgrade to --transport http for modern support');
     await startSSEServer(server, port);
+  } else if (transportMode === 'hybrid') {
+    await startHybridHttpServer(server, port);
   } else {
+    // stdio mode (default)
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error(`MCP Web3 Stats v${VERSION} started and listening on stdio.`);

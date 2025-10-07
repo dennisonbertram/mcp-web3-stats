@@ -47,7 +47,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.4",
+    "@modelcontextprotocol/sdk": "1.19.1",
     "dotenv": "^16.4.5",
     "zod": "^3.23.8"
   }

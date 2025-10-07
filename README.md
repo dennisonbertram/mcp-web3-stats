@@ -97,8 +97,11 @@ bun install
 # Create .env file with your Dune API key
 echo "DUNE_API_KEY=your_actual_dune_api_key_here" > .env
 
-# Start the server
+# Start the server (default stdio mode for CLI tools)
 bun start
+
+# Or start with modern HTTP transport (recommended for HTTP clients)
+bun start -- --transport http --port 3000
 
 # In a separate terminal, run the MCP Inspector to test the tools
 npx @modelcontextprotocol/inspector bun run index.ts
@@ -119,6 +122,145 @@ mcp-web3-stats
 # In a separate terminal, test with the MCP Inspector
 npx @modelcontextprotocol/inspector mcp-web3-stats
 ```
+
+## Transport Modes
+
+This server supports multiple transport modes for different deployment scenarios:
+
+### 🚀 Modern Streamable HTTP (Recommended for HTTP)
+```bash
+# MCP Specification: 2025-03-26
+mcp-web3-stats --transport http --port 3000
+```
+
+**Features**:
+- ✅ Single `/mcp` endpoint for all operations
+- ✅ Proper session management with `Mcp-Session-Id` header
+- ✅ SSE support for server-to-client notifications
+- ✅ Protocol version negotiation (`MCP-Protocol-Version` header)
+- ✅ Session termination via DELETE request
+- ✅ DNS rebinding protection
+- ✅ Localhost-only binding for security
+
+**Endpoints**:
+- `POST /mcp` - Send requests, initialize sessions
+- `GET /mcp` - Receive notifications via Server-Sent Events
+- `DELETE /mcp` - Terminate sessions
+- `GET /health` - Health check
+
+### 💻 stdio (Default)
+```bash
+# For CLI tools and desktop integrations (Claude Desktop, etc.)
+mcp-web3-stats
+```
+
+Best for: Desktop applications, CLI tools, subprocess integrations
+
+### 🔄 Hybrid Mode
+```bash
+# Support both modern and legacy clients simultaneously
+mcp-web3-stats --transport hybrid --port 3000
+```
+
+Provides both `/mcp` (modern) and `/sse` + `/message` (legacy) endpoints.
+
+### ⚠️ Legacy SSE (Deprecated)
+```bash
+# Only for backwards compatibility - will be removed in future version
+mcp-web3-stats --transport sse-legacy --port 3000
+```
+
+**Migration Notice**: The legacy SSE transport uses the deprecated 2024-11-05 specification. Please migrate to `--transport http` for modern protocol support.
+
+## Testing the HTTP Transport
+
+### Initialize a Session
+```bash
+curl -X POST http://127.0.0.1:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "MCP-Protocol-Version: 2025-03-26" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {"name": "test-client", "version": "1.0.0"}
+    },
+    "id": 1
+  }'
+```
+
+Extract the `Mcp-Session-Id` from response headers.
+
+### List Available Tools
+```bash
+curl -X POST http://127.0.0.1:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -H "MCP-Protocol-Version: 2025-03-26" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}'
+```
+
+### Open SSE Stream for Notifications
+```bash
+curl -N http://127.0.0.1:3000/mcp \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -H "Accept: text/event-stream"
+```
+
+### Terminate Session
+```bash
+curl -X DELETE http://127.0.0.1:3000/mcp \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -H "MCP-Protocol-Version: 2025-03-26"
+```
+
+## Security Considerations
+
+When running in HTTP mode, this server implements several security measures:
+
+- **Localhost-only binding**: Server binds to `127.0.0.1` only
+- **Origin validation**: Validates `Origin` header on requests
+- **DNS rebinding protection**: Enforces allowed hosts list
+- **Session security**: Cryptographically secure session IDs (UUID v4)
+- **Protocol version validation**: Ensures client/server compatibility
+
+For production deployments, consider:
+- Running behind a reverse proxy (nginx, Caddy)
+- Implementing additional authentication (OAuth2, API keys)
+- Using HTTPS with valid certificates
+- Rate limiting and request size limits
+
+## Migration Guide: Legacy SSE → Modern HTTP
+
+If you're currently using the deprecated SSE transport:
+
+**Before**:
+```bash
+mcp-web3-stats --transport sse --port 3000
+# Endpoints: /sse (GET), /message (POST)
+# Header: X-Session-Id
+```
+
+**After**:
+```bash
+mcp-web3-stats --transport http --port 3000
+# Endpoint: /mcp (POST, GET, DELETE)
+# Header: Mcp-Session-Id
+```
+
+**Migration Steps**:
+1. Update client to use single `/mcp` endpoint
+2. Change header from `X-Session-Id` to `Mcp-Session-Id`
+3. Add `MCP-Protocol-Version: 2025-03-26` header
+4. Add `Accept: application/json, text/event-stream` header for POST requests
+5. Update initialization to use POST instead of GET
+6. Use DELETE for session termination instead of just closing connection
+
+**Transitional Period**:
+Use `--transport hybrid` to support both old and new clients simultaneously during migration.
 
 ## Supported Networks
 
@@ -199,6 +341,12 @@ Wallet Profile:
 
 ### Environment Variables
 - `DUNE_API_KEY`: Required API key from [Dune Analytics](https://docs.dune.com/api)
+
+### Command Line Options
+- `--transport <mode>`: Transport mode (`stdio`, `http`, `sse-legacy`, `hybrid`)
+- `--port <number>`: Port for HTTP transports (default: 3000)
+- `--help`: Show help message
+- `--version`: Show version information
 
 ### Adding New Blockscout Networks
 Edit the `BLOCKSCOUT_NETWORKS` object in `index.ts`:
