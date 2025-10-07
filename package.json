@@ -34,9 +34,9 @@
   ],
   "scripts": {
     "start": "bun run src/index.ts",
-    "build": "bunx tsc",
-    "prepublishOnly": "bun run build",
-    "lint": "bunx tsc --noEmit",
+    "build": "npx tsc",
+    "prepublishOnly": "npm run build",
+    "lint": "npx tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "engines": {
