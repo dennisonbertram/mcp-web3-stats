@@ -33,9 +33,8 @@ In the Railway dashboard or via CLI, set these environment variables:
 # Dune API Configuration
 DUNE_API_KEY=your_dune_api_key_here
 
-# Server Binding (Railway requires 0.0.0.0)
-MCP_BIND_HOST=0.0.0.0
-PORT=${{PORT}}  # Railway provides this automatically
+# Railway automatically sets PORT - no configuration needed
+# Server auto-detects Railway and binds to 0.0.0.0
 ```
 
 #### Authentication Variables (Highly Recommended)
@@ -109,7 +108,7 @@ curl -X POST https://your-app.railway.app/mcp \
 |----------|----------|---------|-------------|
 | `DUNE_API_KEY` | ✅ Yes | - | Your Dune Analytics API key |
 | `PORT` | Auto | 3000 | Railway sets this automatically |
-| `MCP_BIND_HOST` | Railway | `127.0.0.1` | Use `0.0.0.0` for Railway |
+| `MCP_BIND_HOST` | No | Auto-detected | Auto-detects Railway (0.0.0.0) vs local (127.0.0.1) |
 | `MCP_AUTH_ENABLED` | No | `false` | Enable authentication (set to `true` for production) |
 | `MCP_API_KEYS` | No | - | Comma-separated list of valid API keys |
 | `MCP_BASIC_AUTH` | No | - | Comma-separated `username:password` pairs |
