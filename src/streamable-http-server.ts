@@ -31,20 +31,20 @@ export async function startStreamableHttpServer(
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
 
-    // Validate authentication (health checks are always allowed)
-    if (!validateAuth(req, auth)) {
-      sendAuthRequired(res);
-      return;
-    }
-
-    // Health check endpoint
+    // Health check endpoint - MUST be first, before any auth checks
     if (url.pathname === '/health' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         status: 'ok',
         version: VERSION,
-        sessions: transports.size
+        uptime: process.uptime()
       }));
+      return;
+    }
+
+    // Validate authentication for all other endpoints
+    if (!validateAuth(req, auth)) {
+      sendAuthRequired(res);
       return;
     }
 
