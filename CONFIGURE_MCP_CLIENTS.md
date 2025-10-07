@@ -31,7 +31,35 @@ Your MCP server is deployed at:
 
 ### 2. Add Server Configuration
 
-Open the configuration file and add your server:
+Open the configuration file and add your server.
+
+**Option A: Using Environment Variable (Recommended - More Secure)**
+
+```json
+{
+  "mcpServers": {
+    "web3-stats": {
+      "transport": "http",
+      "url": "https://mcp-web3-stats-production.up.railway.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MCP_WEB3_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Then set the environment variable:
+```bash
+# macOS/Linux - Add to ~/.zshrc or ~/.bashrc
+export MCP_WEB3_API_KEY="your_api_key_here"
+
+# Then restart terminal and Claude Desktop
+```
+
+**⚠️ Known Issue:** There's a bug in some Claude versions where environment variable substitution in headers doesn't work correctly. If this doesn't work, use Option B.
+
+**Option B: Hardcoded API Key (Works Reliably)**
 
 ```json
 {
@@ -56,12 +84,14 @@ Open the configuration file and add your server:
       "transport": "http",
       "url": "https://mcp-web3-stats-production.up.railway.app/mcp",
       "headers": {
-        "X-API-Key": "YOUR_API_KEY_HERE"
+        "X-API-Key": "${MCP_WEB3_API_KEY}"
       }
     }
   }
 }
 ```
+
+**Note:** Environment variable substitution uses `${VAR}` syntax. Fallback values are also supported: `${VAR:-default_value}`
 
 ### 3. Get Your API Key
 
@@ -82,6 +112,35 @@ In Claude Desktop:
 1. Start a new conversation
 2. Type a message that would use Web3 data
 3. Look for the Web3 Stats tools in the available tools
+
+## Understanding `headers` vs `env`
+
+**Important distinction:**
+
+- **`headers`**: Used for **HTTP transport** MCP servers (like yours on Railway)
+  - Sends HTTP headers with each request
+  - Example: `"headers": {"Authorization": "Bearer key"}`
+
+- **`env`**: Used for **stdio/command transport** MCP servers (local processes)
+  - Sets environment variables for the spawned process
+  - Example: `"env": {"API_KEY": "key"}`
+
+Since your server uses HTTP transport, you use `headers`, not `env`.
+
+**Example of stdio transport (for comparison):**
+```json
+{
+  "mcpServers": {
+    "local-server": {
+      "command": "node",
+      "args": ["server.js"],
+      "env": {
+        "API_KEY": "value"
+      }
+    }
+  }
+}
+```
 
 ## Claude Code Configuration
 
