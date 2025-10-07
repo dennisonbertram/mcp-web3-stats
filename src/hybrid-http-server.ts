@@ -207,11 +207,14 @@ export async function startHybridHttpServer(
     res.end(JSON.stringify({ error: 'Not found' }));
   });
 
-  // Start listening on localhost only
+  // Start listening on specified host (localhost for dev, 0.0.0.0 for production)
+  // Auto-detect Railway/cloud environments and bind to 0.0.0.0
+  const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
+  const host = process.env.MCP_BIND_HOST || (isRailway ? '0.0.0.0' : '127.0.0.1');
   return new Promise<Server>((resolve, reject) => {
-    httpServer.listen(port, '127.0.0.1', () => {
+    httpServer.listen(port, host, () => {
       console.log(`MCP Web3 Stats v${VERSION} started with hybrid HTTP/SSE transport`);
-      console.log(`Server running at http://127.0.0.1:${port}/`);
+      console.log(`Server running at http://${host}:${port}/`);
       console.log('');
       console.log('========== MODERN ENDPOINTS (2025-03-26) ==========');
       console.log(`  MCP:     http://127.0.0.1:${port}/mcp`);

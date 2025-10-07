@@ -166,7 +166,9 @@ export async function startStreamableHttpServer(
   });
 
   // Start listening on specified host (localhost for dev, 0.0.0.0 for production)
-  const host = process.env.MCP_BIND_HOST || '127.0.0.1';
+  // Auto-detect Railway/cloud environments and bind to 0.0.0.0
+  const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
+  const host = process.env.MCP_BIND_HOST || (isRailway ? '0.0.0.0' : '127.0.0.1');
   return new Promise<Server>((resolve, reject) => {
     httpServer.listen(port, host, () => {
       console.log(`MCP Web3 Stats v${VERSION} started with modern Streamable HTTP transport`);
