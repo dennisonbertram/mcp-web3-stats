@@ -207,10 +207,10 @@ export async function startHybridHttpServer(
     res.end(JSON.stringify({ error: 'Not found' }));
   });
 
-  // Start listening on specified host (localhost for dev, 0.0.0.0 for production)
-  // Auto-detect Railway/cloud environments and bind to 0.0.0.0
-  const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
-  const host = process.env.MCP_BIND_HOST || (isRailway ? '0.0.0.0' : '127.0.0.1');
+  // Start listening on specified host
+  // Default to 0.0.0.0 for HTTP mode (required for Railway/cloud deployments)
+  // Override with MCP_BIND_HOST=127.0.0.1 for local testing if needed
+  const host = process.env.MCP_BIND_HOST || '0.0.0.0';
   return new Promise<Server>((resolve, reject) => {
     httpServer.listen(port, host, () => {
       console.log(`MCP Web3 Stats v${VERSION} started with hybrid HTTP/SSE transport`);
